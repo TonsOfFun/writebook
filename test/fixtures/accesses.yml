@@ -1,0 +1,34 @@
+david_handbook:
+  user: david
+  book: handbook
+  level: editor
+
+david_manual:
+  user: david
+  book: manual
+  level: editor
+
+jason_handbook:
+  user: jason
+  book: handbook
+  level: editor
+
+jason_manual:
+  user: jason
+  book: manual
+  level: editor
+
+jz_handbook:
+  user: jz
+  book: handbook
+  level: reader
+
+jz_manual:
+  user: jz
+  book: manual
+  level: reader
+
+kevin_handbook:
+  user: kevin
+  book: handbook
+  level: editor

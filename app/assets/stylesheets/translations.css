@@ -1,0 +1,33 @@
+/* Language translations */
+.lanuage-list-menu {
+  --max-width: 40ch;
+
+  background-color: var(--color-subtle);
+  border: 1px solid var(--color-subtle-dark);
+  border-radius: 0.5em;
+  inset: auto;
+  inline-size: max-content;
+  margin-inline: var(--inline-space);
+  max-inline-size: 40ch;
+  overflow: clip;
+  position: absolute;
+  z-index: 1;
+
+  @media (max-width: 70ch) {
+    max-inline-size: calc(var(--max-width) - var(--inline-space));
+  }
+
+  .popover-orientation-top & {
+    inset-block-end: 100%;
+  }
+}
+
+.language-list {
+  display: grid;
+  gap: var(--block-space-half) var(--inline-space);
+  grid-template-rows: min-content;
+  grid-template-columns: min-content 1fr;
+  justify-content: start;
+  margin: 0;
+  text-align: start;
+}

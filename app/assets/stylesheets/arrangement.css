@@ -1,0 +1,85 @@
+.arrangement {
+  container-type: inline-size;
+}
+
+:has(#arrange-mode:checked) .disable-when-arranging {
+  cursor: not-allowed;
+  filter: grayscale(100%) contrast(0.5);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.arrangement__container {
+  &:where(:has(#arrange-mode:checked)) {
+    .hide-when-arranging {
+      display: none;
+    }
+
+    .arrangement__item {
+      cursor: move;
+
+      * {
+        pointer-events: none;
+      }
+
+      .btn:not(.arrangement__handle) {
+        opacity: 0.3;
+      }
+    }
+
+    &:where(:has(#toc-list:checked)) {
+      .btn:is(.arrangement__handle) {
+        display: flex;
+      }
+    }
+
+    &:where(:has(#toc-grid:checked)) {
+      .toc__thumbnail {
+        border-color: var(--color-link);
+      }
+    }
+  }
+}
+
+.arrangement--adding {
+  .arrangement__item {
+    * {
+      pointer-events: none;
+    }
+  }
+}
+
+.arrangement-cursor {
+  border-style: dashed;
+}
+
+.arrangement-drag-image {
+  background-color: var(--color-link);
+  border-radius: 1rem;
+  color: var(--color-ink-reversed);
+  inset: auto 100% 100% auto;
+  line-height: 2rem;
+  padding: 0 1rem;
+  position: fixed;
+  text-wrap: nowrap;
+}
+
+.btn:is(.arrangement__handle) {
+  display: none;
+  flex-shrink: 0;
+}
+
+.arrangement-placeholder {
+  background-color: var(--color-subtle-light);
+  border: 1px dashed var(--color-subtle-dark);
+  border-radius: 0.2em;
+}
+
+.arrangement-selected {
+  background-color: var(--color-selected);
+  border-radius: 0.2em;
+
+  .arrangement-move-mode & {
+    animation: pulse 1000ms infinite;
+  }
+}

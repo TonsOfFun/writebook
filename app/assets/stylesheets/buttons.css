@@ -1,0 +1,182 @@
+:root {
+  --btn-size: 2.65em;
+}
+
+.btn {
+  --transition: 300ms ease;
+
+  align-items: center;
+  background-color: var(--btn-background, transparent);
+  border-radius: var(--btn-border-radius, 2em);
+  border: var(--btn-border-size, 1px) solid var(--btn-border-color, var(--color-subtle-dark));
+  color: var(--btn-color, var(--color-ink));
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1em;
+  font-weight: 600;
+  gap: var(--btn-gap, 0.5em);
+  justify-content: center;
+  padding: var(--btn-padding, 0.5em 1.1em);
+  pointer-events: auto;
+  transition:
+    background-color var( --transition),
+    border var( --transition),
+    color var( --transition),
+    filter var( --transition),
+    opacity var( --transition);
+
+  img {
+    -webkit-touch-callout: none;
+
+    user-select: none;
+  }
+
+  /* Default icon styles */
+  &:where(:has(img, svg)) {
+    text-align: start;
+
+    img, svg {
+      block-size: var(--btn-icon-size, 1.3em);
+      inline-size: var(--btn-icon-size, 1.3em);
+      max-inline-size: unset;
+    }
+
+    img:not([class]) {
+      filter: invert(0);
+
+      @media (prefers-color-scheme: dark) {
+        filter: invert(1);
+      }
+    }
+  }
+
+  /* Circle buttons */
+  &.btn--circle,
+  &:where(:has(.for-screen-reader):has(img, svg)) {
+    --btn-border-radius: 50%;
+    --btn-padding: 0;
+
+    aspect-ratio: 1;
+    block-size: var(--btn-size);
+    display: grid;
+    inline-size: var(--btn-size);
+    place-items: center;
+
+    > * {
+      grid-area: 1/1;
+    }
+  }
+
+  /* With radios and checkboxes */
+  &:has(input[type=radio], input[type=checkbox]) {
+    :is(input[type=radio], input[type=checkbox]) {
+      appearance: none;
+      block-size: calc(var(--btn-size) - var(--outline-size));
+      border-radius: var(--btn-border-radius);
+      cursor: pointer;
+      display: flex;
+      inline-size: calc(var(--btn-size) - var(--outline-size));
+      margin: 0;
+      padding: 0;
+    }
+
+    img.checked {
+      display: none;
+    }
+  }
+
+  &:has(input:checked)  {
+    --btn-background: var(--color-ink);
+    --btn-color: var(--color-ink-reversed);
+    --outline-color: var(--color-ink);
+
+    img {
+      filter: invert(1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      img {
+        filter: invert(0);
+      }
+    }
+
+    img.checked {
+      display: block;
+    }
+  }
+
+  &[disabled],
+  &:has([disabled]),
+  [disabled] &[type=submit],
+  &[type=submit]:disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  @media print {
+    display: none;
+  }
+}
+
+/* Variants */
+.btn--link {
+  --btn-background: var(--color-link);
+  --btn-color: var(--color-ink-reversed);
+  --outline-color: var(--color-link);
+}
+
+.btn--negative {
+  --btn-background: var(--color-negative);
+  --btn-color: var(--color-ink-reversed);
+  --outline-color: var(--color-negative);
+}
+
+.btn--placeholder {
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.btn--plain {
+  --btn-border-radius: 0.5em;
+  --btn-border-size: 0;
+  --btn-icon-size: 100%;
+  --btn-padding: 0;
+  --hover-size: 0;
+}
+
+.btn--positive {
+  --btn-background: var(--color-positive);
+  --btn-color: var(--color-ink-reversed);
+  --outline-color: var(--color-positive);
+}
+
+.btn--reversed {
+  --btn-background: var(--color-ink);
+  --btn-color: var(--color-bg);
+  --outline-color: var(--color-ink);
+}
+
+:is(.btn--link, .btn--negative, .btn--positive, .btn--reversed) {
+  --btn-border-color: var(--color-bg);
+
+  img:not([class]) {
+    filter: invert(1);
+
+    @media (prefers-color-scheme: dark) {
+      filter: invert(0);
+    }
+  }
+}
+
+.btn--small {
+  font-size: 0.8em;
+}
+
+.btn--success {
+  animation: success 1s ease-out;
+
+  img {
+    animation: zoom-fade 300ms ease-out;
+  }
+}

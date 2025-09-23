@@ -1,0 +1,57 @@
+.lightbox {
+  --speed: 150ms;
+
+  background-color: oklch(var(--lch-white) / 0.66);
+  block-size: 100dvh;
+  border: 0;
+  inline-size: 100dvw;
+  inset: 0;
+  margin: auto;
+  max-height: unset;
+  max-width: unset;
+  overflow: hidden;
+  padding: var(--block-space-half) var(--inline-space);
+
+  &::backdrop {
+    -webkit-backdrop-filter: blur(66px);
+    backdrop-filter: blur(66px);
+    background-color: var(--color-ink);
+    opacity: 0;
+    transition:
+      display var(--backdrop-speed) allow-discrete,
+      opacity var(--backdrop-speed),
+      overlay var(--backdrop-speed) allow-discrete;
+  }
+
+  &[open] {
+    display: grid;
+    opacity: 1;
+    place-items: center;
+
+    &::backdrop {
+      opacity: 0.75;
+    }
+  }
+
+  @starting-style {
+    &[open] {
+      opacity: 0;
+    }
+
+    &[open]::backdrop {
+      opacity: 0;
+    }
+  }
+}
+
+.lightbox__btn {
+  align-self: start;
+  grid-area: 1/1;
+  justify-self: end;
+}
+
+.lightbox__image {
+  grid-area: 1/1;
+  max-inline-size: calc(100dvw - (var(--inline-space) * 2));
+  max-block-size: calc(100dvh - (var(--block-space) * 2));
+}

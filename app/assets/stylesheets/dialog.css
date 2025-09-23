@@ -1,0 +1,45 @@
+:is(.dialog) {
+  --backdrop-speed: 150ms;
+  --panel-size: max-content;
+  --speed: 150ms;
+
+  border: 0;
+  opacity: 0;
+  transform: translateY(50%);
+  transform-origin: bottom center;
+  transition:
+      display var(--speed) allow-discrete,
+      opacity var(--speed),
+      overlay var(--speed) allow-discrete,
+      transform var(--speed);
+
+  &::backdrop {
+    background-color: var(--color-always-black);
+    opacity: 0;
+    transform: translateY(0);
+    transition:
+      display var(--backdrop-speed) allow-discrete,
+      opacity var(--backdrop-speed),
+      overlay var(--backdrop-speed) allow-discrete;
+  }
+
+  &[open] {
+    opacity: 1;
+    transform: translateY(0);
+
+    &::backdrop {
+      opacity: 0.5;
+    }
+  }
+
+  @starting-style {
+    &[open] {
+      opacity: 0;
+      transform: translateY(50%);
+    }
+
+    &[open]::backdrop {
+      opacity: 0;
+    }
+  }
+}

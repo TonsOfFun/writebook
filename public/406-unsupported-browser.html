@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your browser is not supported (406)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      --lch-black: 0% 0 0;
+      --lch-gray: 75% 0.005 96;
+      --lch-white: 100% 0 0;
+
+      --color-border: oklch(var(--lch-gray));
+      --color-bg: oklch(var(--lch-white));
+      --color-text: oklch(var(--lch-black));
+
+      --btn-size: 2.65em;
+
+      background-color: var(--color-bg);
+      block-size: 100dvh;
+      color: var(--color-text);
+      display: grid;
+      margin: 0;
+      padding: 0;
+      place-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
+      @media (prefers-color-scheme: dark) {
+        --lch-black: 100% 0 0;
+        --lch-gray: 44.95% 0 0;
+        --lch-white: 0% 0 0;
+      }
+    }
+
+    svg {
+      fill: var(--color-text);
+
+      @media (prefers-color-scheme: dark) {
+        fill: var(--color-text);
+      }
+    }
+
+    .error {
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      gap: 2em;
+      justify-content: start;
+      margin-block: 2dvh 15dvh;
+    }
+
+    .error__img {
+      aspect-ratio: 1;
+      background-color: var(--color-text);
+      block-size: auto;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      inline-size: 30dvh;
+
+      svg {
+        fill: var(--color-bg);
+        grid-area: 1/1;
+        max-inline-size: 66%;
+
+        @media (prefers-color-scheme: dark) {
+          fill: var(--color-bg);
+        }
+      }
+    }
+
+    p {
+      max-inline-size: 50ch;
+      padding: 0 3dvw;
+      margin-inline: auto;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 1em;
+      justify-content: center;
+    }
+
+    .btn {
+      align-items: center;
+      aspect-ratio: 1;
+      background-color: var(--color-bg);
+      block-size: var(--btn-size);
+      border-radius: 50%;
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      cursor: pointer;
+      display: grid;
+      font-weight: 600;
+      font-size: 1.4rem;
+      gap: 0.5em;
+      inline-size: var(--btn-size);
+      justify-content: center;
+      padding: 0;
+      place-items: center;
+      text-align: center;
+
+      svg {
+        -webkit-touch-callout: none;
+        grid-area: 1/1;
+        inline-size: 1.3em;
+        max-inline-size: unset;
+        user-select: none;
+      }
+    }
+
+    .for-screen-reader {
+      clip-path: inset(50%);
+      height: 1px;
+      width: 1px;
+      overflow: hidden;
+      position: absolute;
+      white-space: nowrap;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="error">
+    <div class="error__img">
+      <svg enable-background="new 0 0 24 24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-label="Your browser is not supported">
+        <path d="m17.2 14.4c.1-.8.2-1.6.2-2.4s-.1-1.6-.2-2.4h4.1c.2.8.3 1.6.3 2.4s-.1 1.6-.3 2.4m-6.2 6.7c.7-1.3 1.3-2.8 1.7-4.3h3.5c-1.1 2-3 3.5-5.2 4.3m-.3-6.7h-5.6c-.1-.8-.2-1.6-.2-2.4s.1-1.6.2-2.4h5.6c.1.8.2 1.6.2 2.4s-.1 1.6-.2 2.4m-2.8 7.2c-1-1.4-1.8-3-2.3-4.8h4.6c-.5 1.7-1.3 3.3-2.3 4.8m-4.8-14.4h-3.5c1.1-2 3-3.5 5.2-4.3-.7 1.4-1.3 2.8-1.7 4.3m-3.5 9.6h3.5c.4 1.5 1 2.9 1.7 4.3-2.2-.8-4.1-2.3-5.2-4.3m-1-2.4c-.2-.8-.3-1.6-.3-2.4s.1-1.6.3-2.4h4.1c-.1.8-.2 1.6-.2 2.4s.1 1.6.2 2.4m5.2-12c1 1.4 1.8 3 2.3 4.8h-4.6c.5-1.7 1.3-3.3 2.3-4.8m8.3 4.8h-3.5c-.4-1.5-.9-2.9-1.7-4.3 2.2.8 4.1 2.3 5.2 4.3m-8.3-7.2c-6.6 0-12 5.4-12 12s5.4 12 12 12 12-5.4 12-12-5.4-12-12-12z"/>
+      </svg>
+    </div>
+    <a href="/" class="btn" autofocus="true">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="m21.864 9.5h-11.607a.25.25 0 0 1 -.174-.43l3.864-3.721a2.609 2.609 0 0 0 -.075-3.682 2.612 2.612 0 0 0 -3.68-.077l-9.792 9.699a1 1 0 0 0 -.008 1.411l9.625 9.724a2.66 2.66 0 0 0 3.755-3.757l-3.729-3.733a.25.25 0 0 1 .177-.427h11.673c1.556 0 2-1.675 2-2.51a2.28 2.28 0 0 0 -2.029-2.497z" />
+      </svg>
+      <span class="for-screen-reader">Go back</span>
+    </a>
+    <div>
+      <p>🇺🇸 Upgrade to a supported web browser. Writebook requires a modern web browser. Please use one of the browsers listed below and make sure auto-updates are enabled.</p>
+      <p>🇪🇸 Actualiza a un navegador web compatible. Writebook requiere un navegador web moderno. Utiliza uno de los navegadores listados a continuación y asegúrate de que las actualizaciones automáticas estén habilitadas.</p>
+      <p>🇫🇷 Mettez à jour vers un navigateur web pris en charge. Writebook nécessite un navigateur web moderne. Veuillez utiliser l'un des navigateurs répertoriés ci-dessous et assurez-vous que les mises à jour automatiques sont activées.</p>
+      <p>🇮🇳 समर्थित वेब ब्राउज़र में अपग्रेड करें। Writebook को एक आधुनिक वेब ब्राउज़र की आवश्यकता है। कृपया नीचे सूचीबद्ध ब्राउज़रों में से कोई एक का उपयोग करें और सुनिश्चित करें कि स्वचालित अपडेट्स सक्षम हैं।</p>
+      <p>🇩🇪 Aktualisieren Sie auf einen unterstützten Webbrowser. Writebook erfordert einen modernen Webbrowser. Verwenden Sie bitte einen der unten aufgeführten Browser und stellen Sie sicher, dass automatische Updates aktiviert sind.</p>
+      <p>🇧🇷 Atualize para um navegador compatível. O Writebook requer um navegador moderno. Por favor, use um dos navegadores listados abaixo e certifique-se de que as atualizações automáticas estão ativadas.</p>
+      <p><strong>Safari 17.2+, Chrome 119+, Firefox 121+, Opera 104+</strong></p>
+    </div>
+  </div>
+</body>
+</html>

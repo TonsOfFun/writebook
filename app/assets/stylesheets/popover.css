@@ -1,0 +1,19 @@
+:is(.popover) {
+  --speed: 150ms;
+
+  opacity: 0;
+  transition:
+      display var(--speed) allow-discrete,
+      opacity var(--speed),
+      overlay var(--speed) allow-discrete,;
+
+  &[open] {
+    opacity: 1;
+  }
+
+  @starting-style {
+    &[open] {
+      opacity: 0;
+    }
+  }
+}

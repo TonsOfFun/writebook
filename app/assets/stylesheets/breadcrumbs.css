@@ -1,0 +1,20 @@
+.breadcrumbs {
+  align-items: center;
+  display: flex;
+  gap: var(--inline-space-half);
+  margin-inline: auto;
+  min-width: 0;
+
+  > * {
+    flex-shrink: 1;
+    max-inline-size: 40ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  input {
+    field-sizing: content;
+    min-inline-size: 8ch;
+  }
+}

@@ -1,0 +1,21 @@
+.panel {
+  background-color: var(--color-bg);
+  border: 1px solid var(--panel-border-color, var(--color-subtle));
+  color: var(--color-ink);
+  border-radius: var(--panel-border-radius, 1em);
+  inline-size: var(--panel-size, 40ch);
+  max-inline-size: calc(100% - var(--inline-space) * 2);
+  padding: calc(var(--block-space) * 2);
+  position: relative;
+
+  @media (prefers-color-scheme: dark) {
+    --panel-border-color: var(--color-subtle-dark);
+  }
+}
+
+.panel__close {
+  border: 0;
+  font-size: 0.6rem;
+  inset: calc(var(--block-space) / 3) calc(var(--block-space) / 3) auto auto;
+  position: absolute;
+}

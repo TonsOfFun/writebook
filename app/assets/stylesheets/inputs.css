@@ -1,0 +1,181 @@
+/* Text inputs */
+.input {
+  accent-color: var(--input-accent-color, var(--color-ink));
+  background-color: var(--input-background, transparent);
+  border-radius: var(--input-border-radius, 0.5em);
+  border: var(--input-border-size, 1px) solid var(--input-border-color, var(--color-subtle-dark));
+  color: var(--input-color, var(--color-ink));
+  font-size: max(16px, 1em);
+  inline-size: 100%;
+  line-height: 1.2;
+  max-inline-size: 100%;
+  padding: var(--input-padding, 0.5em 0.8em);
+  resize: none;
+
+  &:autofill,
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-ink);
+    -webkit-box-shadow: 0 0 0px 1000px var(--color-selected) inset;
+  }
+
+  &:where(:not(:active)):focus {
+    --input-border-color: var(--color-selected-dark);
+    --hover-color: var(--color-selected-dark);
+    --outline-size: 0;
+    --outline-color: transparent;
+
+    filter: var(--hover-filter);
+    box-shadow: 0 0 0 var(--hover-size) var(--hover-color);
+  }
+}
+
+.input--file {
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  inline-size: auto;
+  place-items: center;
+
+  > * {
+    grid-area: 1 / 1;
+  }
+
+  img {
+    border-radius: 0.4em;
+  }
+
+  input[type="file"] {
+    --input-border-color: transparent;
+    --input-border-radius: 8px;
+
+    block-size: 100%;
+    cursor: pointer;
+    font-size: 0;
+    inline-size: 100%;
+    overflow: clip;
+
+    &::file-selector-button {
+      appearance: none;
+      cursor: pointer;
+      opacity: 0;
+    }
+
+    &:focus,
+    &:focus-visible {
+      --input-border-color: var(--color-selected-dark);
+      --input-border-radius: 8px;
+      --input-border-size: 0.15rem;
+    }
+  }
+}
+
+.input--textara {
+  --input-padding: 0.5em;
+
+  line-height: 1.1;
+  min-block-size: calc(4lh + (2 * var(--input-padding)));
+  min-inline-size: 100%;
+  padding-block: var(--input-padding);
+  padding-inline: calc(var(--input-padding) + calc((1lh - 1ex) / 2));
+
+  @supports (field-sizing: content) {
+    field-sizing: content;
+    max-block-size: calc(10lh + (2 * var(--input-padding)));
+    min-block-size: calc(1lh + (2 * var(--input-padding)));
+  }
+}
+
+/* Switches */
+.switch {
+  block-size: 1.75em;
+  border-radius: 2em;
+  display: inline-flex;
+  inline-size: 3em;
+  position: relative;
+
+  &:has(:focus-visible) {
+    .switch__btn {
+      box-shadow:
+        0 0 0 var(--outline-size) var(--color-bg),
+        0 0 0 calc(var(--outline-size) * 2) var(--color-ink);
+    }
+  }
+}
+
+.switch__input {
+  block-size: 0;
+  inline-size: 0;
+  opacity: 0.1;
+}
+
+.switch__btn {
+  background-color: var(--color-subtle-dark);
+  border-radius: 2em;
+  cursor: pointer;
+  inset: 0;
+  position: absolute;
+  transition: 150ms ease;
+
+  &::before {
+    background-color: var(--color-ink-reversed);
+    block-size: 1.35em;
+    border-radius: 50%;
+    content: "";
+    inline-size: 1.35em;
+    inset-block-end: 0.2em;
+    inset-inline-start: 0.2em;
+    position: absolute;
+    transition: 150ms ease;
+  }
+
+  .switch__input:disabled + & {
+    background-color: var(--color-subtle-dark) !important;
+    cursor: not-allowed;
+  }
+
+  .switch__input:checked + & {
+    background-color: var(--color-link);
+
+    &::before {
+      transform: translateX(1.2em);
+    }
+  }
+}
+
+/* Containers that act like (and contain) inputs */
+.input--actor {
+  transition: box-shadow 150ms ease, outline-offset 150ms ease;
+
+  &:focus-within {
+    --input-border-color: var(--color-selected-dark);
+    --hover-color: var(--color-selected-dark);
+    --outline-size: 0;
+
+    filter: var(--hover-filter);
+    box-shadow: 0 0 0 var(--hover-size) var(--hover-color);
+  }
+
+  .input {
+    --input-padding: 0;
+    --input-border-radius: 0;
+    --input-background: transparent;
+    --input-border-size: 0;
+    --hover-size: 0;
+    --outline-size: 0;
+    --outline-color: transparent;
+
+    inline-size: 100%;
+    outline: 0;
+  }
+
+  &:has(.input:is(
+    :autofill,
+    :-webkit-autofill,
+    :-webkit-autofill:hover,
+    :-webkit-autofill:focus)) {
+      -webkit-text-fill-color: var(--color-text);
+      -webkit-box-shadow: 0 0 0px 1000px var(--color-selected) inset;
+  }
+}

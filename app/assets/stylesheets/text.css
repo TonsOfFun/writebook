@@ -1,0 +1,165 @@
+:where(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6) {
+  font-weight: 800;
+  hyphens: auto;
+  letter-spacing: -0.02ch;
+  line-height: 1.1;
+  margin-block: 0;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+:where(h1, h2, h3, h4, h5, h6) {
+  display: block;
+}
+
+:is(h1, h2, h3, h4, h5, h6) {
+  margin-block: 0.65em;
+}
+
+:is(h1, .h1) {
+  font-size: 2em;
+}
+
+:is(h2, .h2) {
+  font-size: 1.5em;
+}
+
+:is(h3, .h3) {
+  font-size: 1.17em;
+}
+
+:is(h4, .h4) {
+  font-size: 1em;
+}
+
+:is(h5, .h5) {
+  font-size: 0.83em;
+}
+
+:is(h6, .h6) {
+  font-size: 0.67em;
+}
+
+:is(p, ul, ol, dl, blockquote, pre, figure, table, hr) {
+  margin-block: 0.65lh;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
+.heading {
+  position: relative;
+}
+
+.heading__link {
+  --hover-size: 0;
+  --opacity: 0.5;
+  --size: 0.8em;
+
+  background: url(link.svg) no-repeat center bottom 0.2em;
+  background-size: var(--size);
+  block-size: 1em;
+  color: var(--color-link);
+  display: inline-flex;
+  font-size: var(--size);
+  inline-size: var(--size);
+  padding: 1em 0 0;
+  opacity: var(--opacity);
+  overflow: hidden;
+  transition: opacity 300ms ease;
+  vertical-align: middle;
+
+  @media (hover: hover) {
+    --opacity: 0;
+
+    :is(h1, h2, h3, h4, h5, h6):hover & {
+      --opacity: 0.5;
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    filter: invert(1);
+  }
+}
+
+hr {
+  border-color: var(--color-subtle-dark);
+  border-style: var(--border-style, solid) none none;
+  margin: 2lh auto;
+}
+
+b, strong {
+  font-weight: 700;
+}
+
+:is(pre, code, .pre, .code) {
+  background-color: var(--color-subtle-light);
+  border: 1px solid var(--color-subtle);
+  border-radius: 0.3em;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+pre {
+  overflow-x: auto;
+  text-wrap: nowrap;
+}
+
+code {
+  padding: 0.1em 0.3em;
+}
+
+:is(pre, .pre) {
+  border-radius: 0.5em;
+  padding: 0.5lh 2ch;
+
+  :is(code, .code) {
+    background-color: transparent;
+    border: 0;
+    font-size: 1em;
+    padding: 0;
+  }
+}
+
+p {
+  hyphens: auto;
+  letter-spacing: -0.005ch;
+}
+
+:is(blockquote, .quote) {
+  font-style: italic;
+  margin: 0 3ch;
+
+  p {
+    hyphens: none;
+  }
+}
+
+table {
+  border: 1px solid var(--color-subtle-dark);
+  border-collapse: collapse;
+  margin: 1lh 0;
+}
+
+th {
+  font-weight: 700;
+}
+
+:where(th, td) {
+  border: 1px solid var(--color-subtle-dark);
+  padding: 0.2lh 1ch;
+  text-align: start;
+}
+
+:where(th) {
+  border-block-end-width: 3px;
+}
+
+del {
+  background-color: oklch(var(--lch-red) / 0.1);
+  color: var(--color-negative);
+}
+
+ins {
+  background-color: oklch(var(--lch-green) / 0.1);
+  color: var(--color-positive);
+}

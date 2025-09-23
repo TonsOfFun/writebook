@@ -1,0 +1,34 @@
+.search__banner {
+  background-color: var(--color-highlight);
+  border-radius: 1.5em;
+  margin: var(--block-space-half) auto 0;
+  padding: 0.3em 0.5em 0.3em 0.9em;
+
+  .btn {
+    font-size: 0.5em;
+  }
+}
+
+.search__modal {
+  --panel-size: 80ch;
+}
+
+.search__result {
+  border-radius: 0.5em;
+  padding: 0.5em 0.75em;
+
+  @media (hover: hover) {
+    --hover-size: 0;
+    --outline-color: var(--color-selected-dark);
+
+    &:focus-visible,
+    &:hover {
+      background-color: var(--color-selected);
+    }
+  }
+}
+
+mark {
+  color: var(--color-ink);
+  background-color: var(--color-highlight);
+}

@@ -1,0 +1,20 @@
+class PagesController < LeafablesController
+  before_action :forget_reading_progress, except: :show
+
+  private
+    def forget_reading_progress
+      cookies.delete "reading_progress_#{@book.id}"
+    end
+
+    def default_leaf_params
+      { title: "Untitled" }
+    end
+
+    def new_leafable
+      Page.new leafable_params
+    end
+
+    def leafable_params
+      params.fetch(:page, {}).permit(:body)
+    end
+end

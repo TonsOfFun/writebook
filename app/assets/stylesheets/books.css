@@ -1,0 +1,235 @@
+:root {
+  --theme-color--blue: oklch(69.14% 0.174 245.01);
+  --theme-color--orange: oklch(70.22% 0.2 45.1);
+  --theme-color--magenta: oklch(61.8% 0.19 354.64);
+  --theme-color--green: oklch(71.53% 0.175 155.352);
+  --theme-color--violet: oklch(56.13% 0.244 297.99);
+  --theme-color--white: oklch(100% 0 0);
+  --theme-color--black: oklch(0 0 0);
+}
+
+.books {
+  inline-size: 100%;
+}
+
+.book {
+  --cover-height: auto;
+  --space: clamp(2ch, 10%, 6ch);
+
+  container-type: unset;
+  column-gap: calc(var(--space) / 2);
+  display: grid;
+  grid-template-columns: minmax(25%, 20dvw) 1fr;
+  inline-size: 100%;
+  padding-inline: var(--space);
+
+  @media (max-width: 70ch) {
+    grid-template-columns: 1fr;
+    padding-inline: var(--inline-space);
+  }
+}
+
+.book-access {
+  &:has(.book-access__switch:checked) {
+    .book-access__reader {
+      background-color: var(--color-link);
+      cursor: not-allowed;
+      pointer-events: none;
+
+      img {
+        filter: invert(1);
+      }
+    }
+  }
+}
+
+.book__cover {
+  background-color: var(--color-bg);
+  border-radius: 0.3em;
+  box-shadow: 0 0 0 1px var(--color-subtle-dark);
+  margin: auto;
+  transition: background 300ms ease;
+
+  @media (min-width: 70ch) {
+    max-block-size: var(--cover-height, 75vh);
+  }
+
+  .theme--black &,
+  :has(#book_theme_black:checked) & {
+    background: url(covers/cover-black.png) no-repeat center;
+    background-size: cover;
+  }
+
+  .theme--blue &,
+  :has(#book_theme_blue:checked) & {
+    background: url(covers/cover-blue.png) no-repeat center;
+    background-size: cover;
+  }
+
+  .theme--green &,
+  :has(#book_theme_green:checked) & {
+    background: url(covers/cover-green.png) no-repeat center;
+    background-size: cover;
+  }
+
+  .theme--orange &,
+  :has(#book_theme_orange:checked) & {
+    background: url(covers/cover-orange.png) no-repeat center;
+    background-size: cover;
+  }
+
+  .theme--magenta &,
+  :has(#book_theme_magenta:checked) & {
+    background: url(covers/cover-magenta.png) no-repeat center;
+    background-size: cover;
+  }
+
+  .theme--violet &,
+  :has(#book_theme_violet:checked) &{
+    background: url(covers/cover-violet.png) no-repeat center;
+    background-size: cover;
+  }
+
+  .theme--white &,
+  :has(#book_theme_white:checked) & {
+    background: url(covers/cover-white.png) no-repeat center;
+    background-size: cover;
+  }
+}
+
+.btn--circle:has(#book_theme_white:checked) {
+  img.checked {
+    filter: invert(0);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    img.checked {
+      filter: invert(0);
+    }
+  }
+}
+
+.book__cover--add {
+  inset: auto 50% calc(var(--block-space) * -1) auto;
+  margin-inline-end: calc(var(--btn-size) * -0.5);
+  position: absolute;
+  z-index: 1;
+}
+
+.book__cover-wrapper {
+  color: var(--color-always-white);
+  display: inline-grid;
+  margin: auto;
+  place-items: start;
+
+  > * {
+    grid-area: 1 / 1;
+  }
+
+  @media (max-width: 70ch) {
+    .book & {
+      font-size: 3em;
+    }
+  }
+
+  @media (min-width: 150ch) {
+    .book & {
+      font-size: 1.5em;
+    }
+  }
+
+  .theme--white & .book__title {
+    color: var(--color-always-black);
+  }
+}
+
+.book__cover--remove {
+  margin-block-start: calc(var(--block-space) * -1);
+  z-index: 0;
+}
+
+.book__form {
+  @media (max-width: 70ch) {
+    flex-direction: column;
+  }
+}
+
+.book__nav {
+  font-size: var(--font-medium-responsive);
+  margin: var(--block-space-double) auto;
+
+  .btn {
+    max-inline-size: 50ch;
+  }
+}
+
+.book__navbar {
+  .btn--placeholder {
+    display: none;
+  }
+
+  &:has(.btn.fullscreen):has(.btn.settings) {
+    .placeholder-start {
+      display: inline-flex;
+    }
+  }
+
+  &:not(:has(.btn.fullscreen)):not(:has(.btn.settings)) {
+    .placeholder-end {
+      display: inline-flex;
+    }
+  }
+}
+
+.book__sidebar {
+  inset-block-start: var(--block-space);
+  position: sticky;
+  z-index: 1;
+}
+
+.book__title {
+  font-weight: 750;
+}
+
+.book__toolbar {
+  inset-block-start: 0;
+  z-index: 2;
+}
+
+/* Bookmarks */
+.bookmark {
+  --icon-size: 1.5em;
+
+  display: block;
+  inset: var(--progress, 0) calc(var(--icon-size) / 4) auto calc(var(--icon-size) * -0.5);
+  margin-block-start: calc(var(--icon-size) * -0.5);
+  position: absolute;
+
+  .bookmark__icon {
+    display: flex;
+    flex-grow: 1;
+
+    svg {
+      block-size: var(--icon-size);
+      flex-shrink: 0;
+      inline-size: var(--icon-size);
+    }
+
+    &::after {
+      border-block-end: 0.07em dashed var(--color-marker);
+      content: "";
+      display: flex;
+      flex-grow: 1;
+      margin: auto;
+    }
+  }
+}
+
+.bookmark__link {
+  border-radius: 0.3em;
+  color: var(--color-link);
+  content: "";
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}

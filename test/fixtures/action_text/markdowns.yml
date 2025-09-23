@@ -1,0 +1,9 @@
+welcome:
+  record: welcome (Page)
+  name: body
+  content: This is _such_ a great handbook.
+
+summary:
+  record: summary (Page)
+  name: body
+  content: Thanks for reading!
