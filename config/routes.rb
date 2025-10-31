@@ -73,6 +73,18 @@ Rails.application.routes.draw do
     post "/uploads" => "markdown/uploads#create", as: :markdown_uploads
   end
 
+  # AI Assistant Routes
+  scope :assistants do
+    post "writing/improve" => "assistants#writing_improve"
+    post "writing/grammar" => "assistants#writing_grammar"
+    post "writing/style" => "assistants#writing_style"
+    post "writing/summarize" => "assistants#writing_summarize"
+    post "writing/expand" => "assistants#writing_expand"
+    post "writing/brainstorm" => "assistants#writing_brainstorm"
+    post "analyze_file" => "assistants#analyze_file"
+    post "image/caption" => "assistants#image_caption"
+  end
+
   get "up" => "rails/health#show", as: :rails_health_check
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

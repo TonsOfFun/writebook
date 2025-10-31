@@ -1,0 +1,33 @@
+Please <%= @action %> the following content:
+
+<%= @content %>
+
+<% if @context.present? %>
+Context: <%= @context %>
+<% end %>
+
+<% if @style_guide.present? %>
+Style guide: <%= @style_guide %>
+<% end %>
+
+<% if @max_words.present? %>
+Maximum words: <%= @max_words %>
+<% end %>
+
+<% if @target_length.present? %>
+Target length: <%= @target_length %>
+<% end %>
+
+<% if @areas_to_expand.present? %>
+Areas to expand: <%= @areas_to_expand %>
+<% end %>
+
+<% if @topic.present? %>
+Topic: <%= @topic %>
+<% end %>
+
+<% if @number_of_ideas.present? %>
+Number of ideas: <%= @number_of_ideas %>
+<% end %>
+
+Please provide a clear and helpful response that addresses the request.

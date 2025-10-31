@@ -1,0 +1,14 @@
+Please <%= @task %> of the following content:
+
+<% if @context.present? %>
+Context: <%= @context %>
+
+<% end %>
+Content to improve:
+<%= @content %>
+
+Provide the improved version while maintaining the author's voice and intent. Focus on:
+- Clarity and coherence
+- Flow and readability
+- Engaging language
+- Proper structure

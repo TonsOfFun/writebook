@@ -49,3 +49,9 @@ group :test do
 end
 
 gem "reactionview", "~> 0.1.2"
+
+# AI Integration
+gem "activeagent"
+gem "ruby-openai"  # For OpenAI support
+gem "ruby-anthropic"  # For Anthropic/Claude support
+gem "pdf-reader"  # For PDF analysis

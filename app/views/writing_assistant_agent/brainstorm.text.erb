@@ -1,0 +1,15 @@
+Please brainstorm ideas for the following topic:
+
+Topic: <%= @topic %>
+
+<% if @context.present? %>
+Context: <%= @context %>
+<% end %>
+
+<% if @number_of_ideas.present? %>
+Generate <%= @number_of_ideas %> creative ideas.
+<% else %>
+Generate 5 creative ideas.
+<% end %>
+
+Provide a list of creative, relevant ideas with brief descriptions for each.

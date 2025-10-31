@@ -1,0 +1,88 @@
+/* AI Assistant Toolbar Styles */
+
+.house-toolbar__separator {
+  display: inline-block;
+  width: 1px;
+  height: 24px;
+  background: #e0e0e0;
+  margin: 0 8px;
+  vertical-align: middle;
+}
+
+.house-toolbar__button[data-action^="ai-"] {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.house-toolbar__button[data-action^="ai-"]:hover {
+  background-color: #f0f9ff;
+  color: #0369a1;
+}
+
+.house-toolbar__button[data-action^="ai-"].loading {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.house-toolbar__button[data-action^="ai-"].loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid #0369a1;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: ai-spinner 0.6s linear infinite;
+}
+
+@keyframes ai-spinner {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* AI Result Highlight */
+.ai-result-highlight {
+  animation: ai-highlight 1s ease-in-out;
+}
+
+@keyframes ai-highlight {
+  0% {
+    background-color: #fef3c7;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Tooltip for AI actions */
+.house-toolbar__button[data-action^="ai-"][title] {
+  position: relative;
+}
+
+.house-toolbar__button[data-action^="ai-"]:hover::before {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: #1f2937;
+  color: white;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  animation: tooltip-fade-in 0.2s forwards;
+  margin-bottom: 4px;
+}
+
+@keyframes tooltip-fade-in {
+  to {
+    opacity: 1;
+  }
+}
