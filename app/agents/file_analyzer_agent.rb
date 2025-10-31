@@ -1,3 +1,5 @@
+require 'base64'
+
 class FileAnalyzerAgent < ApplicationAgent
   generate_with :openai,
     model: "gpt-4o",
@@ -15,11 +17,16 @@ class FileAnalyzerAgent < ApplicationAgent
     @file_path = params[:file_path]
     @description_detail = params[:description_detail] || "medium"
 
-    # For vision API, we need to encode the image and use the prompt template
+    # For vision API, we need to encode the image properly
     if @file_path && File.exist?(@file_path)
-      @image_base64 = encode_image(@file_path)
-      # The template will be rendered and the image will be passed to GPT-4o vision
-      prompt(content_type: :text)
+      # Encode image as data URI for Active Agent
+      image_data = "data:image/jpeg;base64,#{Base64.strict_encode64(File.read(@file_path))}"
+
+      # Pass the image to the prompt using the image_data parameter
+      prompt(
+        content_type: :text,
+        image_data: image_data
+      )
     else
       prompt(content_type: :text)
     end

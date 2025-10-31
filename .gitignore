@@ -33,3 +33,4 @@
 *.swo
 *~
 tmp/pids/server.pid
+.playwright-mcp/*
