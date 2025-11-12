@@ -7,27 +7,27 @@ class WritingAssistantAgent < ApplicationAgent
     @content = params[:content]
     @context = params[:context]
     @task = "improve the writing quality, clarity, and engagement"
-    prompt(content_type: :text)
+    prompt
   end
 
   def grammar
     @content = params[:content]
     @task = "check and correct grammar, punctuation, and spelling"
-    prompt(content_type: :text)
+    prompt
   end
 
   def style
     @content = params[:content]
     @style_guide = params[:style_guide]
     @task = "adjust the writing style and tone"
-    prompt(content_type: :text)
+    prompt
   end
 
   def summarize
     @content = params[:content]
     @max_words = params[:max_words]
     @task = "create a concise summary"
-    prompt(content_type: :text)
+    prompt
   end
 
   def expand
@@ -35,7 +35,7 @@ class WritingAssistantAgent < ApplicationAgent
     @target_length = params[:target_length]
     @areas_to_expand = params[:areas_to_expand]
     @task = "expand and elaborate on the content"
-    prompt(content_type: :text)
+    prompt
   end
 
   def brainstorm
@@ -43,6 +43,6 @@ class WritingAssistantAgent < ApplicationAgent
     @context = params[:context]
     @number_of_ideas = params[:number_of_ideas]
     @task = "generate creative ideas and suggestions"
-    prompt(content_type: :text)
+    prompt
   end
 end
