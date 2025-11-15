@@ -207,14 +207,18 @@ export default class extends Controller {
   }
 
   async checkGrammar(content) {
-    return await post('/assistants/writing/grammar', {
-      body: JSON.stringify({ content }),
-      responseKind: 'json',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
-      }
-    })
+    if (useStreaming) {
+      return await this.streamRequestWithTurbo('/assistants/writing/improve/stream', { content })
+    } else {
+      return await post('/assistants/writing/grammar', {
+        body: JSON.stringify({ content }),
+        responseKind: 'json',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        }
+      })
+    }
   }
 
   async expandText(content) {
