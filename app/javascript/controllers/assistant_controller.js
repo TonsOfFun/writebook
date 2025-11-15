@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { post } from "@rails/request.js"
+import { createConsumer } from "@rails/actioncable"
 
 export default class extends Controller {
   connect() {
@@ -89,7 +90,12 @@ export default class extends Controller {
       // The @rails/request.js library returns a response with a json property that is a Promise
       if (response.ok) {
         const data = await response.json // json is a Promise that needs to be awaited
-        this.applyAIResult(data, selectedText !== null)
+        // For streaming, the content is already applied in real-time, so we skip applyAIResult
+        // Check if this was a streaming response by looking at the action
+        const isStreamingAction = action === 'ai-improve' // For now, only improve uses streaming
+        if (!isStreamingAction) {
+          this.applyAIResult(data, selectedText !== null)
+        }
       } else {
         throw new Error('AI request failed')
       }
@@ -101,14 +107,102 @@ export default class extends Controller {
     }
   }
 
-  async improveWriting(content) {
-    return await post('/assistants/writing/improve', {
-      body: JSON.stringify({ content }),
-      responseKind: 'json',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
-      }
+  async improveWriting(content, useStreaming = true) {
+    if (useStreaming) {
+      return await this.streamRequestWithTurbo('/assistants/writing/improve/stream', { content })
+    } else {
+      return await post('/assistants/writing/improve', {
+        body: JSON.stringify({ content }),
+        responseKind: 'json',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        }
+      })
+    }
+  }
+
+  async streamRequestWithTurbo(url, data) {
+    const editor = this.getEditor()
+    if (!editor) return { ok: false }
+
+    // Clear the editor
+    if (editor.tagName === 'HOUSE-MD') {
+      editor.value = ''
+    } else {
+      editor.value = ''
+    }
+
+    let accumulatedContent = ''
+
+    return new Promise((resolve, reject) => {
+      // Make the initial request to start streaming
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then((responseData) => {
+        const streamId = responseData.stream_id
+
+        // Create ActionCable subscription
+        const cable = window.App || (window.App = {})
+        if (!cable.cable) {
+          cable.cable = createConsumer()
+        }
+
+        const subscription = cable.cable.subscriptions.create(
+          { channel: "AssistantStreamChannel", stream_id: streamId },
+          {
+            connected: () => {
+              console.log('[ActionCable] Connected to AssistantStreamChannel with stream_id:', streamId)
+            },
+            disconnected: () => {
+              console.log('[ActionCable] Disconnected from AssistantStreamChannel')
+            },
+            received: (message) => {
+              console.log('[ActionCable] Message received:', message)
+
+              if (message.content) {
+                console.log('[ActionCable] Content chunk received, length:', message.content.length)
+                // Append new content chunk
+                accumulatedContent += message.content
+
+                // Update editor in real-time
+                if (editor.tagName === 'HOUSE-MD') {
+                  editor.value = accumulatedContent
+                  editor.dispatchEvent(new Event('input', { bubbles: true }))
+                } else {
+                  editor.value = accumulatedContent
+                  editor.dispatchEvent(new Event('input', { bubbles: true }))
+                }
+              } else if (message.done) {
+                console.log('[ActionCable] Streaming complete')
+                // Streaming complete
+                subscription.unsubscribe()
+                resolve({
+                  ok: true,
+                  json: Promise.resolve({ improved_content: accumulatedContent })
+                })
+              } else if (message.error) {
+                console.log('[ActionCable] Error received:', message.error)
+                subscription.unsubscribe()
+                reject(new Error(message.error))
+              }
+            }
+          }
+        )
+
+        console.log('[ActionCable] Subscription created for stream_id:', streamId)
+      })
+      .catch(error => {
+        console.error('Streaming request error:', error)
+        reject(error)
+      })
     })
   }
 

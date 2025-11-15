@@ -76,6 +76,7 @@ Rails.application.routes.draw do
   # AI Assistant Routes
   scope :assistants do
     post "writing/improve" => "assistants#writing_improve"
+    post "writing/improve/stream" => "assistants#writing_improve_stream"
     post "writing/grammar" => "assistants#writing_grammar"
     post "writing/style" => "assistants#writing_style"
     post "writing/summarize" => "assistants#writing_summarize"

@@ -1,4 +1,6 @@
 class AssistantsController < ApplicationController
+  include ActionController::Live
+
   # Authentication is handled by ApplicationController via require_authentication
 
   def writing_improve
@@ -199,6 +201,44 @@ class AssistantsController < ApplicationController
     Rails.logger.error e.backtrace.join("\n")
     File.delete(temp_path) if defined?(temp_path) && File.exist?(temp_path)
     render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  # Streaming endpoint for writing improvements using ActionCable
+  def writing_improve_stream
+    # Generate a unique stream identifier for this request
+    stream_id = "writing_assistant_#{SecureRandom.hex(8)}"
+    Rails.logger.info "[Streaming] Generated stream_id: #{stream_id}"
+
+    # Start streaming in background thread
+    Thread.new do
+      begin
+        Rails.logger.info "[Streaming] Starting agent in background thread for stream_id: #{stream_id}"
+
+        # Pass stream_id through params so it's accessible in streaming callbacks
+        agent = WritingAssistantAgent.with(
+          content: params[:content],
+          context: params[:context],
+          stream_id: stream_id
+        )
+
+        Rails.logger.info "[Streaming] Agent created with stream_id parameter"
+
+        # Execute the agent with streaming
+        agent.improve.generate_now
+        Rails.logger.info "[Streaming] Agent execution completed for stream_id: #{stream_id}"
+
+      rescue => e
+        Rails.logger.error "Streaming error: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        ActionCable.server.broadcast(stream_id, { error: e.message })
+      ensure
+        ActiveRecord::Base.connection_pool.release_connection if defined?(ActiveRecord::Base)
+      end
+    end
+
+    # Return the stream ID to the client
+    Rails.logger.info "[Streaming] Returning stream_id to client: #{stream_id}"
+    render json: { stream_id: stream_id }
   end
 
 end

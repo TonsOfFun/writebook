@@ -244,7 +244,7 @@ GEM
       racc (~> 1.4)
     nokogiri (1.18.10-x86_64-linux-musl)
       racc (~> 1.4)
-    openai (0.35.1)
+    openai (0.36.0)
       connection_pool
     parallel (1.27.0)
     parser (3.3.9.0)
@@ -444,7 +444,7 @@ DEPENDENCIES
   image_processing (~> 1.13)
   importmap-rails
   jbuilder
-  openai (~> 0.35.1)
+  openai
   pdf-reader
   propshaft
   puma (>= 5.0)

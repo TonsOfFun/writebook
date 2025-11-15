@@ -1,7 +1,11 @@
 class WritingAssistantAgent < ApplicationAgent
   generate_with :openai,
     model: "gpt-4o-mini",
+    stream: true,
     instructions: "You are an expert writing assistant helping authors create and improve their content for books."
+
+  on_stream :broadcast_chunk
+  on_stream_close :broadcast_complete
 
   def improve
     @content = params[:content]
@@ -44,5 +48,22 @@ class WritingAssistantAgent < ApplicationAgent
     @number_of_ideas = params[:number_of_ideas]
     @task = "generate creative ideas and suggestions"
     prompt
+  end
+
+  private
+
+  def broadcast_chunk(chunk)
+    return unless chunk.delta
+    return unless params[:stream_id]
+
+    Rails.logger.info "[Agent] Broadcasting chunk to stream_id: #{params[:stream_id]}, chunk length: #{chunk.delta.length}"
+    ActionCable.server.broadcast(params[:stream_id], { content: chunk.delta })
+  end
+
+  def broadcast_complete(chunk)
+    return unless params[:stream_id]
+
+    Rails.logger.info "[Agent] Broadcasting completion to stream_id: #{params[:stream_id]}"
+    ActionCable.server.broadcast(params[:stream_id], { done: true })
   end
 end
