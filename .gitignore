@@ -38,3 +38,14 @@ log/development.log
 storage/db/development.sqlite3
 log/development.log
 log/development.log
+log/development.log
+storage/db/development.sqlite3
+storage/db/development.sqlite3-shm
+storage/db/development.sqlite3-wal
+storage/db/test.sqlite3
+storage/files/**/*
+storage/files/*
+tmp/pids/server.pid
+log/development.log
+storage/*
+storage/db/test.sqlite3
