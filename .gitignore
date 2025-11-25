@@ -36,3 +36,5 @@ tmp/pids/server.pid
 .playwright-mcp/*
 log/development.log
 storage/db/development.sqlite3
+log/development.log
+log/development.log
