@@ -1,4 +1,6 @@
 class AssistantsController < ApplicationController
+  include ActionController::Live
+
   # Authentication is handled by ApplicationController via require_authentication
 
   def writing_improve
@@ -201,4 +203,24 @@ class AssistantsController < ApplicationController
     render json: { error: e.message }, status: :unprocessable_entity
   end
 
+  # Streaming endpoint for writing improvements using ActionCable
+  def writing_improve_stream
+    # Generate a unique stream identifier for this request
+    stream_id = "writing_assistant_#{SecureRandom.hex(8)}"
+    Rails.logger.info "[Streaming] Generated stream_id: #{stream_id}"
+
+    Rails.logger.info "[Streaming] Starting agent in background thread for stream_id: #{stream_id}"
+
+    # Pass stream_id through params so it's accessible in streaming callbacks
+    agent = WritingAssistantAgent.with(
+      content: params[:content],
+      context: params[:context],
+      stream_id: stream_id
+    ).improve.generate_later
+
+
+    # Return the stream ID to the client
+    Rails.logger.info "[Streaming] Returning stream_id to client: #{stream_id}"
+    render json: { stream_id: stream_id }
+  end
 end

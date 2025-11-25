@@ -7,3 +7,11 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+# Create seed user for workshop
+User.find_or_create_by!(email_address: "justin@activeagents.ai") do |user|
+  user.name = "Justin"
+  user.password = "workshop"
+  user.role = :administrator
+  user.active = true
+end

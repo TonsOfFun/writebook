@@ -24,11 +24,10 @@ class FileAnalyzerAgent < ApplicationAgent
 
       # Pass the image to the prompt using the image_data parameter
       prompt(
-        content_type: :text,
-        image_data: image_data
+        image: image_data
       )
     else
-      prompt(content_type: :text)
+      prompt
     end
   end
 
