@@ -110,7 +110,7 @@ GEM
     Ascii85 (2.0.1)
     action_text-trix (2.1.15)
       railties
-    activeagent (1.0.0.rc1)
+    activeagent (1.0.0)
       actionpack (>= 7.2, <= 9.0)
       actionview (>= 7.2, <= 9.0)
       activejob (>= 7.2, <= 9.0)
@@ -434,7 +434,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  activeagent (= 1.0.0.rc1)
+  activeagent (~> 1.0.0)
   bcrypt (~> 3.1.7)
   brakeman
   capybara
