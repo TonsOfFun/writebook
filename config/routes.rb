@@ -75,8 +75,11 @@ Rails.application.routes.draw do
 
   # AI Assistant Routes
   scope :assistants do
+    # Single streaming endpoint for all writing actions
+    post "stream" => "assistants#stream", as: :assistants_stream
+
+    # Legacy non-streaming endpoints (kept for backwards compatibility)
     post "writing/improve" => "assistants#writing_improve"
-    post "writing/improve/stream" => "assistants#writing_improve_stream"
     post "writing/grammar" => "assistants#writing_grammar"
     post "writing/style" => "assistants#writing_style"
     post "writing/summarize" => "assistants#writing_summarize"

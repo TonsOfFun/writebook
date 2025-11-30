@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { createConsumer } from "@rails/actioncable"
 
 export default class extends Controller {
   static targets = ["filePicker", "editor"]
@@ -9,6 +10,12 @@ export default class extends Controller {
     if (!this.element.dataset.uploadInitialized) {
       this.setupFileUpload()
       this.element.dataset.uploadInitialized = 'true'
+    }
+
+    // Initialize ActionCable consumer
+    this.cable = window.App || (window.App = {})
+    if (!this.cable.cable) {
+      this.cable.cable = createConsumer()
     }
   }
 
@@ -106,8 +113,13 @@ export default class extends Controller {
     // Build the markdown for the image
     const imageMarkdown = `![${uploadResult.fileName || 'Image'}](${uploadResult.fileUrl})`
 
-    // Add caption if available
-    const captionMarkdown = uploadResult.caption ? `\n*${uploadResult.caption}*` : ''
+    // If streaming is enabled, add placeholder caption
+    let captionMarkdown = ''
+    if (uploadResult.streamId) {
+      captionMarkdown = '\n*Generating caption...*'
+      // Start streaming caption
+      this.streamCaption(uploadResult.streamId, uploadResult.fileUrl)
+    }
 
     // Insert at cursor position or at the end
     const newContent = currentValue + '\n' + imageMarkdown + captionMarkdown + '\n\n'
@@ -118,6 +130,80 @@ export default class extends Controller {
     // Trigger input event to update preview
     houseMd.dispatchEvent(new Event('input', { bubbles: true }))
     houseMd.dispatchEvent(new Event('change', { bubbles: true }))
+  }
+
+  streamCaption(streamId, imageUrl) {
+    const houseMd = document.querySelector('house-md')
+    if (!houseMd) return
+
+    console.log('[Caption Streaming] Starting for stream_id:', streamId)
+
+    let accumulatedCaption = ''
+
+    // Subscribe to ActionCable for caption streaming
+    const subscription = this.cable.cable.subscriptions.create(
+      { channel: "AssistantStreamChannel", stream_id: streamId },
+      {
+        connected: () => {
+          console.log('[Caption Streaming] Connected to AssistantStreamChannel with stream_id:', streamId)
+        },
+        disconnected: () => {
+          console.log('[Caption Streaming] Disconnected from AssistantStreamChannel')
+        },
+        received: (message) => {
+          console.log('[Caption Streaming] Message received:', message)
+
+          if (message.content) {
+            // Append new caption chunk
+            accumulatedCaption += message.content
+            console.log('[Caption Streaming] Accumulated caption:', accumulatedCaption)
+
+            // Update the caption in the editor
+            this.updateCaption(imageUrl, accumulatedCaption)
+          } else if (message.done) {
+            console.log('[Caption Streaming] Streaming complete. Final caption:', accumulatedCaption)
+            // Streaming complete - final update
+            this.updateCaption(imageUrl, accumulatedCaption)
+            subscription.unsubscribe()
+          } else if (message.error) {
+            console.error('[Caption Streaming] Error:', message.error)
+            this.updateCaption(imageUrl, 'Error generating caption')
+            subscription.unsubscribe()
+          }
+        }
+      }
+    )
+  }
+
+  updateCaption(imageUrl, caption) {
+    const houseMd = document.querySelector('house-md')
+    if (!houseMd) return
+
+    // Find the image markdown and update the caption below it
+    const currentContent = houseMd.value || ''
+    const imageMarkdown = currentContent.split('\n').find(line => line.includes(imageUrl))
+
+    if (imageMarkdown) {
+      // Build the pattern to find and replace the caption
+      // Pattern: image line followed by caption line
+      const escapedUrl = imageUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const pattern = new RegExp(
+        `(!\\[.*?\\]\\(${escapedUrl}\\))\\n\\*.*?\\*`,
+        'g'
+      )
+
+      // Replace with image and new caption
+      const newContent = currentContent.replace(
+        pattern,
+        `$1\n*${caption}*`
+      )
+
+      // Update the editor
+      houseMd.value = newContent
+
+      // Trigger input event to update preview
+      houseMd.dispatchEvent(new Event('input', { bubbles: true }))
+    }
   }
 
   showUploadingState() {

@@ -1,3 +1,7 @@
-<%= leafable_edit_form(page, id: "leafable-editor", data: { controller: "assistant house-md-caption markdown-upload" }) do |form| %>
-  <%= form.markdown_area :body, toolbar: "house_toolbar", required: true, autofocus: true, class: "page__editor" %>
-<% end %>
+<div data-controller="ai-modal">
+  <%= leafable_edit_form(page, id: "leafable-editor", data: { controller: "assistant house-md-caption markdown-upload" }) do |form| %>
+    <%= form.markdown_area :body, toolbar: "house_toolbar", required: true, autofocus: true, class: "page__editor" %>
+  <% end %>
+
+  <%= render "shared/ai_modal" %>
+</div>

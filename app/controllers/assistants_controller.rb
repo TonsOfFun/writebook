@@ -203,24 +203,46 @@ class AssistantsController < ApplicationController
     render json: { error: e.message }, status: :unprocessable_entity
   end
 
-  # Streaming endpoint for writing improvements using ActionCable
-  def writing_improve_stream
-    # Generate a unique stream identifier for this request
+  # Single streaming endpoint that routes to different agent actions
+  def stream
+    action = params[:action_type]
     stream_id = "writing_assistant_#{SecureRandom.hex(8)}"
-    Rails.logger.info "[Streaming] Generated stream_id: #{stream_id}"
+    Rails.logger.info "[Streaming] Action: #{action}, stream_id: #{stream_id}"
 
-    Rails.logger.info "[Streaming] Starting agent in background thread for stream_id: #{stream_id}"
-
-    # Pass stream_id through params so it's accessible in streaming callbacks
     agent = WritingAssistantAgent.with(
       content: params[:content],
       context: params[:context],
+      style_guide: params[:style_guide],
+      max_words: params[:max_words] || 150,
+      target_length: params[:target_length],
+      areas_to_expand: params[:areas_to_expand],
+      topic: params[:topic],
+      number_of_ideas: params[:number_of_ideas] || 5,
       stream_id: stream_id
-    ).improve.generate_later
+    )
 
+    # Route to the appropriate agent action
+    case action
+    when 'improve'
+      agent.improve.generate_later
+    when 'grammar'
+      agent.grammar.generate_later
+    when 'style'
+      agent.style.generate_later
+    when 'summarize'
+      agent.summarize.generate_later
+    when 'expand'
+      agent.expand.generate_later
+    when 'brainstorm'
+      agent.brainstorm.generate_later
+    else
+      return render json: { error: "Unknown action: #{action}" }, status: :unprocessable_entity
+    end
 
-    # Return the stream ID to the client
-    Rails.logger.info "[Streaming] Returning stream_id to client: #{stream_id}"
     render json: { stream_id: stream_id }
+  rescue => e
+    Rails.logger.error "[Streaming] Error: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 end

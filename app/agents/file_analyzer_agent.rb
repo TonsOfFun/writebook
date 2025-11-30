@@ -3,7 +3,14 @@ require 'base64'
 class FileAnalyzerAgent < ApplicationAgent
   generate_with :openai,
     model: "gpt-4o",
+    stream: true,
     instructions: "You are an expert document analyzer capable of extracting insights from PDFs, images, and other file types."
+
+  on_stream :broadcast_chunk
+  on_stream_close :broadcast_complete
+
+  # Defer base64 encoding until right before prompt processing
+  before_prompt :encode_image_for_prompt, only: :analyze_image
 
   def analyze_pdf
     # Read PDF content (would need pdf-reader gem)
@@ -13,22 +20,11 @@ class FileAnalyzerAgent < ApplicationAgent
   end
 
   def analyze_image
-    # For image analysis, OpenAI's vision models can be used
+    # Store file path - encoding happens lazily in before_prompt callback
     @file_path = params[:file_path]
     @description_detail = params[:description_detail] || "medium"
 
-    # For vision API, we need to encode the image properly
-    if @file_path && File.exist?(@file_path)
-      # Encode image as data URI for Active Agent
-      image_data = "data:image/jpeg;base64,#{Base64.strict_encode64(File.read(@file_path))}"
-
-      # Pass the image to the prompt using the image_data parameter
-      prompt(
-        image: image_data
-      )
-    else
-      prompt
-    end
+    prompt
   end
 
   def extract_text
@@ -45,6 +41,23 @@ class FileAnalyzerAgent < ApplicationAgent
 
   private
 
+  # Lazily encode image to base64 only when the prompt is about to be processed
+  # This avoids holding large base64 strings in memory longer than necessary
+  def encode_image_for_prompt
+    return unless @file_path && File.exist?(@file_path)
+
+    # Detect content type from file extension
+    content_type = case File.extname(@file_path).downcase
+    when '.png' then 'image/png'
+    when '.gif' then 'image/gif'
+    when '.webp' then 'image/webp'
+    else 'image/jpeg'
+    end
+
+    # Encode and set as instance variable for the prompt
+    @image_data = "data:#{content_type};base64,#{Base64.strict_encode64(File.binread(@file_path))}"
+  end
+
   def extract_pdf_content(file_path)
     # This would require pdf-reader gem
     # For now, returning placeholder
@@ -53,7 +66,7 @@ class FileAnalyzerAgent < ApplicationAgent
 
   def encode_image(file_path)
     # Base64 encode image for vision API
-    Base64.strict_encode64(File.read(file_path))
+    Base64.strict_encode64(File.binread(file_path))
   rescue
     nil
   end
@@ -62,5 +75,20 @@ class FileAnalyzerAgent < ApplicationAgent
     File.read(file_path)
   rescue
     "Unable to read file content"
+  end
+
+  def broadcast_chunk(chunk)
+    return unless chunk.delta
+    return unless params[:stream_id]
+
+    Rails.logger.info "[FileAnalyzer] Broadcasting chunk to stream_id: #{params[:stream_id]}, chunk length: #{chunk.delta.length}"
+    ActionCable.server.broadcast(params[:stream_id], { content: chunk.delta })
+  end
+
+  def broadcast_complete(chunk)
+    return unless params[:stream_id]
+
+    Rails.logger.info "[FileAnalyzer] Broadcasting completion to stream_id: #{params[:stream_id]}"
+    ActionCable.server.broadcast(params[:stream_id], { done: true })
   end
 end
