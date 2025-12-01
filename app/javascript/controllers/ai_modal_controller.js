@@ -27,11 +27,24 @@ export default class extends Controller {
     // Listen for global AI action events (from toolbar buttons outside controller scope)
     this.handleGlobalAiAction = this.handleGlobalAiAction.bind(this)
     document.addEventListener('ai-modal:perform', this.handleGlobalAiAction)
+
+    // Track content changes when user edits
+    this.handleContentInput = this.handleContentInput.bind(this)
+    this.contentTarget.addEventListener('input', this.handleContentInput)
   }
 
   disconnect() {
     document.removeEventListener('ai-modal:perform', this.handleGlobalAiAction)
+    this.contentTarget.removeEventListener('input', this.handleContentInput)
     this.cleanup()
+  }
+
+  /**
+   * Track user edits to the content
+   */
+  handleContentInput() {
+    // Update accumulated content when user edits
+    this.accumulatedContent = this.contentTarget.innerText
   }
 
   /**
@@ -110,7 +123,8 @@ export default class extends Controller {
     this.isStreaming = true
 
     // Update UI
-    this.contentTarget.textContent = ''
+    this.contentTarget.innerHTML = ''
+    this.contentTarget.contentEditable = 'false'  // Disable editing while streaming
     this.setStatus(this.getActionLabel(actionType), true)
     this.applyButtonTarget.disabled = true
     this.copyButtonTarget.disabled = true
@@ -180,7 +194,8 @@ export default class extends Controller {
 
     if (message.content) {
       this.accumulatedContent += message.content
-      this.contentTarget.textContent = this.accumulatedContent
+      // Render as markdown preview while streaming
+      this.contentTarget.innerHTML = this.renderMarkdown(this.accumulatedContent)
 
       // Auto-scroll to bottom
       this.contentTarget.scrollTop = this.contentTarget.scrollHeight
@@ -197,6 +212,9 @@ export default class extends Controller {
     this.setStatus('Complete', false)
     this.applyButtonTarget.disabled = false
     this.copyButtonTarget.disabled = false
+
+    // Enable editing now that streaming is complete
+    this.contentTarget.contentEditable = 'true'
 
     if (this.subscription) {
       this.subscription.unsubscribe()
@@ -282,6 +300,72 @@ export default class extends Controller {
       caption: 'Generating caption...'
     }
     return labels[actionType] || 'Processing...'
+  }
+
+  /**
+   * Simple markdown to HTML renderer for preview
+   */
+  renderMarkdown(text) {
+    if (!text) return ''
+
+    // First, strip outer markdown code fences if present (AI often wraps response in ```markdown)
+    let content = text.trim()
+    if (content.startsWith('```')) {
+      content = content.replace(/^```\w*\n?/, '').replace(/\n?```$/, '')
+    }
+
+    // Escape HTML to prevent XSS
+    let html = content
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+
+    // Code blocks (```...```) - preserve inner code blocks
+    html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+
+    // Inline code (`...`)
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>')
+
+    // Headers (# ## ###)
+    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>')
+
+    // Bold (**...**)
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+
+    // Italic (*...*)
+    html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>')
+
+    // Blockquotes (> ...)
+    html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>')
+
+    // Unordered lists (- ...)
+    html = html.replace(/^- (.+)$/gm, '<li>$1</li>')
+
+    // Ordered lists (1. ...)
+    html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+
+    // Wrap consecutive list items in ul/ol
+    html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+
+    // Paragraphs (double newlines)
+    html = html.replace(/\n\n+/g, '</p><p>')
+
+    // Single newlines to <br> (except after block elements)
+    html = html.replace(/(?<!\>)\n(?!<)/g, '<br>')
+
+    // Wrap in paragraph if not already wrapped in a block element
+    if (!html.match(/^<(h[1-6]|p|ul|ol|pre|blockquote)/)) {
+      html = '<p>' + html + '</p>'
+    }
+
+    // Clean up empty paragraphs and fix paragraph nesting
+    html = html.replace(/<p><\/p>/g, '')
+    html = html.replace(/<p>(<h[1-6]>)/g, '$1')
+    html = html.replace(/(<\/h[1-6]>)<\/p>/g, '$1')
+
+    return html
   }
 
   getEditor() {
