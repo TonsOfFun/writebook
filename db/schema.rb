@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2024_09_28_005927) do
+ActiveRecord::Schema[8.2].define(version: 2025_12_01_222756) do
   create_table "accesses", force: :cascade do |t|
     t.integer "book_id", null: false
     t.datetime "created_at", null: false
@@ -68,6 +68,59 @@ ActiveRecord::Schema[8.2].define(version: 2024_09_28_005927) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "agent_contexts", force: :cascade do |t|
+    t.string "action_name"
+    t.string "agent_name", null: false
+    t.integer "contextable_id"
+    t.string "contextable_type"
+    t.datetime "created_at", null: false
+    t.text "instructions"
+    t.json "options", default: {}
+    t.string "status", default: "pending"
+    t.string "trace_id"
+    t.datetime "updated_at", null: false
+    t.index ["contextable_type", "contextable_id"], name: "index_agent_contexts_on_contextable"
+    t.index ["trace_id"], name: "index_agent_contexts_on_trace_id"
+  end
+
+  create_table "agent_generations", force: :cascade do |t|
+    t.integer "agent_context_id", null: false
+    t.integer "cached_tokens"
+    t.datetime "created_at", null: false
+    t.integer "duration_ms"
+    t.text "error_message"
+    t.string "finish_reason"
+    t.integer "input_tokens", default: 0
+    t.string "model"
+    t.integer "output_tokens", default: 0
+    t.json "provider_details", default: {}
+    t.string "provider_id"
+    t.json "raw_request"
+    t.json "raw_response"
+    t.integer "reasoning_tokens"
+    t.integer "response_message_id"
+    t.string "status", default: "completed"
+    t.integer "total_tokens", default: 0
+    t.datetime "updated_at", null: false
+    t.index ["agent_context_id"], name: "index_agent_generations_on_agent_context_id"
+    t.index ["response_message_id"], name: "index_agent_generations_on_response_message_id"
+  end
+
+  create_table "agent_messages", force: :cascade do |t|
+    t.integer "agent_context_id", null: false
+    t.text "content"
+    t.json "content_parts", default: []
+    t.datetime "created_at", null: false
+    t.string "function_name"
+    t.string "name"
+    t.integer "position", default: 0
+    t.string "role", null: false
+    t.string "tool_call_id"
+    t.datetime "updated_at", null: false
+    t.index ["agent_context_id", "position"], name: "index_agent_messages_on_agent_context_id_and_position"
+    t.index ["agent_context_id"], name: "index_agent_messages_on_agent_context_id"
   end
 
   create_table "books", force: :cascade do |t|
@@ -153,6 +206,9 @@ ActiveRecord::Schema[8.2].define(version: 2024_09_28_005927) do
   add_foreign_key "accesses", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "agent_generations", "agent_contexts"
+  add_foreign_key "agent_generations", "agent_messages", column: "response_message_id"
+  add_foreign_key "agent_messages", "agent_contexts"
   add_foreign_key "edits", "leaves"
   add_foreign_key "leaves", "books"
   add_foreign_key "sessions", "users"
