@@ -15,7 +15,7 @@ class AgentContextTest < ActiveSupport::TestCase
   end
 
   test "creates context with polymorphic association" do
-    book = books(:one)
+    book = Book.create!(title: "Test Book")
     context = AgentContext.create!(
       contextable: book,
       agent_name: "WritingAgent"
