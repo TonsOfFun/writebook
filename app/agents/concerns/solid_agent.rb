@@ -1,4 +1,4 @@
-# HasContext provides database-backed prompt context management for agents.
+# SolidAgent provides database-backed prompt context management for agents.
 #
 # This concern adds the `has_context` class method which configures an agent
 # to persist its prompt context, messages, and generation results to the database.
@@ -43,7 +43,7 @@
 #     end
 #   end
 #
-module HasContext
+module SolidAgent
   extend ActiveSupport::Concern
 
   included do
@@ -219,7 +219,7 @@ module HasContext
     begin
       context.record_generation!(response)
     rescue => e
-      Rails.logger.error "[HasContext] Failed to persist generation: #{e.message}"
+      Rails.logger.error "[SolidAgent] Failed to persist generation: #{e.message}"
     end
   end
 

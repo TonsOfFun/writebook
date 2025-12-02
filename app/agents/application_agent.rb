@@ -1,5 +1,5 @@
 class ApplicationAgent < ActiveAgent::Base
-  include HasContext
+  include SolidAgent
 
   layout "agent"
 
