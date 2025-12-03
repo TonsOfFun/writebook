@@ -325,7 +325,8 @@ export default class extends Controller {
       summarize: 'Summarizing...',
       style: 'Adjusting style...',
       brainstorm: 'Brainstorming...',
-      caption: 'Generating caption...'
+      caption: 'Generating caption...',
+      research: 'Researching topic...'
     }
     return labels[actionType] || 'Processing...'
   }

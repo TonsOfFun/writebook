@@ -85,6 +85,7 @@ Rails.application.routes.draw do
     post "writing/summarize" => "assistants#writing_summarize"
     post "writing/expand" => "assistants#writing_expand"
     post "writing/brainstorm" => "assistants#writing_brainstorm"
+    post "research" => "assistants#research"
     post "analyze_file" => "assistants#analyze_file"
     post "image/caption" => "assistants#image_caption"
   end

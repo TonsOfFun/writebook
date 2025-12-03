@@ -118,6 +118,27 @@ class AssistantsController < ApplicationController
     render json: { error: e.message }, status: :unprocessable_entity
   end
 
+  def research
+    agent_response = ResearchAssistantAgent.with(
+      topic: params[:topic],
+      context: params[:context],
+      full_content: params[:full_content],
+      depth: params[:depth] || "standard"
+    ).research.generate_now
+
+    # Extract the content from the response
+    content = agent_response.respond_to?(:message) ? agent_response.message.content : agent_response.to_s
+
+    render json: {
+      research: content,
+      status: :success
+    }
+  rescue => e
+    Rails.logger.error "ResearchAssistant error: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
   def analyze_file
     file = params[:file]
     analysis_type = params[:analysis_type] || "general"
@@ -244,6 +265,16 @@ class AssistantsController < ApplicationController
       agent.expand.generate_later
     when 'brainstorm'
       agent.brainstorm.generate_later
+    when 'research'
+      # Research uses a different agent with browser tools
+      research_agent = ResearchAssistantAgent.with(
+        topic: params[:topic] || content,
+        context: params[:context],
+        full_content: full_content,
+        depth: params[:depth] || "standard",
+        stream_id: stream_id
+      )
+      research_agent.research.generate_later
     else
       return render json: { error: "Unknown action: #{action}" }, status: :unprocessable_entity
     end
