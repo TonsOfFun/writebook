@@ -3,7 +3,7 @@ require "ostruct"
 
 class FileAnalyzerAgentTest < ActiveSupport::TestCase
   setup do
-    @temp_dir = Rails.root.join('tmp', 'test_files')
+    @temp_dir = Rails.root.join('tmp', "test_files_#{Process.pid}_#{SecureRandom.hex(4)}")
     FileUtils.mkdir_p(@temp_dir)
   end
 

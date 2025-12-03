@@ -1,6 +1,16 @@
-Please adjust the style of the following text:
+Please adjust the style of the following<%= @has_selection ? " selected" : "" %> text:
 
+<% if @has_selection %>
+## Selected text to restyle:
+<%= @selection %>
+
+<% if @full_content.present? && @full_content != @selection %>
+## Full document context (for reference only - do not include in output):
+<%= @full_content %>
+<% end %>
+<% else %>
 <%= @content %>
+<% end %>
 
 <% if @style_guide.present? %>
 Style guide to follow: <%= @style_guide %>
@@ -9,3 +19,4 @@ Make the text more professional and polished while preserving the core message.
 <% end %>
 
 Rewrite the text with the requested style while maintaining accuracy and clarity.
+<% if @has_selection %>Only output the restyled selected text, not the entire document.<% end %>

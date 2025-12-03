@@ -8,34 +8,33 @@ class WritingAssistantAgent < ApplicationAgent
   on_stream_close :broadcast_complete
 
   def improve
-    @content = params[:content]
-    @context = params[:context]
+    setup_content_params
     @task = "improve the writing quality, clarity, and engagement"
     prompt
   end
 
   def grammar
-    @content = params[:content]
+    setup_content_params
     @task = "check and correct grammar, punctuation, and spelling"
     prompt
   end
 
   def style
-    @content = params[:content]
+    setup_content_params
     @style_guide = params[:style_guide]
     @task = "adjust the writing style and tone"
     prompt
   end
 
   def summarize
-    @content = params[:content]
+    setup_content_params
     @max_words = params[:max_words]
     @task = "create a concise summary"
     prompt
   end
 
   def expand
-    @content = params[:content]
+    setup_content_params
     @target_length = params[:target_length]
     @areas_to_expand = params[:areas_to_expand]
     @task = "expand and elaborate on the content"
@@ -45,12 +44,21 @@ class WritingAssistantAgent < ApplicationAgent
   def brainstorm
     @topic = params[:topic]
     @context = params[:context]
+    @full_content = params[:full_content]
     @number_of_ideas = params[:number_of_ideas]
     @task = "generate creative ideas and suggestions"
     prompt
   end
 
   private
+
+  def setup_content_params
+    @content = params[:content]
+    @selection = params[:selection]
+    @full_content = params[:full_content]
+    @context = params[:context]
+    @has_selection = @selection.present?
+  end
 
   def broadcast_chunk(chunk)
     return unless chunk.delta

@@ -1,6 +1,16 @@
-Please expand the following text with more detail and depth:
+Please expand the following<%= @has_selection ? " selected" : "" %> text with more detail and depth:
 
+<% if @has_selection %>
+## Selected text to expand:
+<%= @selection %>
+
+<% if @full_content.present? && @full_content != @selection %>
+## Full document context (for reference - helps maintain consistency):
+<%= @full_content %>
+<% end %>
+<% else %>
 <%= @content %>
+<% end %>
 
 <% if @target_length.present? %>
 Target length: <%= @target_length %>
@@ -11,3 +21,4 @@ Areas to focus on: <%= @areas_to_expand %>
 <% end %>
 
 Expand the content while maintaining the original tone and style. Add relevant details, examples, and explanations to make the text more comprehensive.
+<% if @has_selection %>Only output the expanded selected text, not the entire document.<% end %>

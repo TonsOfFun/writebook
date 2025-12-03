@@ -11,7 +11,8 @@ export default class extends Controller {
   static targets = ["dialog", "content", "status", "applyButton", "copyButton"]
   static values = {
     action: String,
-    originalContent: String
+    originalContent: String,
+    hasSelection: Boolean
   }
 
   connect() {
@@ -23,6 +24,8 @@ export default class extends Controller {
     this.subscription = null
     this.accumulatedContent = ''
     this.isStreaming = false
+    this.storedSelection = null   // Store original selection text for gsub replacement
+    this.storedFullContent = null // Store full content for gsub replacement
 
     // Listen for global AI action events (from toolbar buttons outside controller scope)
     this.handleGlobalAiAction = this.handleGlobalAiAction.bind(this)
@@ -60,17 +63,23 @@ export default class extends Controller {
       return
     }
 
-    const content = this.getEditorContent(editor)
-    if (!content || !content.trim()) {
+    const fullContent = this.getEditorContent(editor)
+    const selection = this.getEditorSelection(editor)
+
+    if (!fullContent || !fullContent.trim()) {
       alert('Please add some content to the editor first')
       return
     }
 
-    this.originalContentValue = content
+    // Store for gsub-style replacement on apply
+    this.storedSelection = selection
+    this.storedFullContent = fullContent
+    this.originalContentValue = fullContent
     this.actionValue = actionType
+    this.hasSelectionValue = !!selection
 
-    this.openModal(actionType)
-    this.startStreaming(actionType, content)
+    this.openModal(actionType, selection ? 'selection' : '')
+    this.startStreaming(actionType, selection, fullContent)
   }
 
   /**
@@ -90,19 +99,24 @@ export default class extends Controller {
     }
 
     // Get content from editor
-    const content = this.getEditorContent(editor)
-    if (!content || !content.trim()) {
+    const fullContent = this.getEditorContent(editor)
+    const selection = this.getEditorSelection(editor)
+
+    if (!fullContent || !fullContent.trim()) {
       alert('Please add some content to the editor first')
       return
     }
 
-    // Store original content for potential restoration
-    this.originalContentValue = content
+    // Store for gsub-style replacement on apply
+    this.storedSelection = selection
+    this.storedFullContent = fullContent
+    this.originalContentValue = fullContent
     this.actionValue = actionType
+    this.hasSelectionValue = !!selection
 
     // Open modal and start streaming
-    this.openModal(actionType)
-    this.startStreaming(actionType, content)
+    this.openModal(actionType, selection ? 'selection' : '')
+    this.startStreaming(actionType, selection, fullContent)
   }
 
   /**
@@ -138,8 +152,19 @@ export default class extends Controller {
     this.dialogTarget.close()
   }
 
-  async startStreaming(actionType, content) {
+  async startStreaming(actionType, selection, fullContent) {
     try {
+      // Build request body - selection is what to work on, full_content provides context
+      const requestBody = {
+        action_type: actionType,
+        full_content: fullContent
+      }
+
+      // If there's a selection, that's the primary content to work on
+      if (selection) {
+        requestBody.selection = selection
+      }
+
       // Make request to get stream_id
       const response = await fetch('/assistants/stream', {
         method: 'POST',
@@ -147,10 +172,7 @@ export default class extends Controller {
           'Content-Type': 'application/json',
           'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
         },
-        body: JSON.stringify({
-          action_type: actionType,
-          content: content
-        })
+        body: JSON.stringify(requestBody)
       })
 
       const data = await response.json()
@@ -224,6 +246,8 @@ export default class extends Controller {
 
   /**
    * Apply the generated content to the editor
+   * If there was a selection, uses gsub to replace selection within full content
+   * Otherwise replaces the entire document
    */
   apply() {
     const editor = this.getEditor()
@@ -235,14 +259,18 @@ export default class extends Controller {
       cleanContent = cleanContent.replace(/^```\w*\n?/, '').replace(/\n?```$/, '')
     }
 
-    // Update editor
-    if (editor.tagName === 'HOUSE-MD') {
-      editor.value = cleanContent
-      editor.dispatchEvent(new Event('input', { bubbles: true }))
+    let finalContent
+    if (this.storedSelection && this.hasSelectionValue) {
+      // gsub-style: replace the original selection within the stored full content
+      finalContent = this.storedFullContent.replace(this.storedSelection, cleanContent)
     } else {
-      editor.value = cleanContent
-      editor.dispatchEvent(new Event('input', { bubbles: true }))
+      // No selection - use the AI output as the entire content
+      finalContent = cleanContent
     }
+
+    // Update editor
+    editor.value = finalContent
+    editor.dispatchEvent(new Event('input', { bubbles: true }))
 
     this.closeModal()
   }
@@ -380,6 +408,38 @@ export default class extends Controller {
     return editor.value
   }
 
+  /**
+   * Get the selected text from the editor
+   * Returns null if no selection or selection is empty
+   */
+  getEditorSelection(editor) {
+    if (editor.tagName === 'HOUSE-MD') {
+      // house-md uses CodeMirror internally
+      const cm = editor.querySelector('.cm-editor')
+      if (cm && cm.cmView) {
+        const state = cm.cmView.state
+        const from = state.selection.main.from
+        const to = state.selection.main.to
+        const selection = state.sliceDoc(from, to)
+        if (selection && selection.trim()) {
+          return selection
+        }
+      }
+      // Fallback: check window selection
+      const selection = window.getSelection()
+      if (selection && selection.toString().trim()) {
+        return selection.toString().trim()
+      }
+    } else if (editor.tagName === 'TEXTAREA') {
+      const start = editor.selectionStart
+      const end = editor.selectionEnd
+      if (start !== end) {
+        return editor.value.substring(start, end)
+      }
+    }
+    return null
+  }
+
   cleanup() {
     if (this.subscription) {
       this.subscription.unsubscribe()
@@ -387,5 +447,7 @@ export default class extends Controller {
     }
     this.isStreaming = false
     this.accumulatedContent = ''
+    this.storedSelection = null
+    this.storedFullContent = null
   }
 }

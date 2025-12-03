@@ -6,6 +6,11 @@ Topic: <%= @topic %>
 Context: <%= @context %>
 <% end %>
 
+<% if @full_content.present? %>
+## Current document (for additional context):
+<%= @full_content %>
+<% end %>
+
 <% if @number_of_ideas.present? %>
 Generate <%= @number_of_ideas %> creative ideas.
 <% else %>

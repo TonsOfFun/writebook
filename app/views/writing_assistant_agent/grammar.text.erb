@@ -1,5 +1,16 @@
-Please check and correct the grammar in the following text:
+Please check and correct the grammar in the following<%= @has_selection ? " selected" : "" %> text:
 
+<% if @has_selection %>
+## Selected text to check:
+<%= @selection %>
+
+<% if @full_content.present? && @full_content != @selection %>
+## Full document context (for reference only - do not include in output):
+<%= @full_content %>
+<% end %>
+<% else %>
 <%= @content %>
+<% end %>
 
 Provide the corrected version with proper grammar, punctuation, and spelling. Maintain the original formatting and tone.
+<% if @has_selection %>Only output the corrected selected text, not the entire document.<% end %>

@@ -209,8 +209,17 @@ class AssistantsController < ApplicationController
     stream_id = "writing_assistant_#{SecureRandom.hex(8)}"
     Rails.logger.info "[Streaming] Action: #{action}, stream_id: #{stream_id}"
 
+    # Determine what content to work on:
+    # - If selection is provided, work on selection with full_content as context
+    # - Otherwise, work on full_content directly
+    selection = params[:selection]
+    full_content = params[:full_content]
+    content = selection.present? ? selection : full_content
+
     agent = WritingAssistantAgent.with(
-      content: params[:content],
+      content: content,
+      selection: selection,
+      full_content: full_content,
       context: params[:context],
       style_guide: params[:style_guide],
       max_words: params[:max_words] || 150,

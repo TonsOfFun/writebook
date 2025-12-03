@@ -1,6 +1,16 @@
-Please provide a concise summary of the following text:
+Please provide a concise summary of the following<%= @has_selection ? " selected" : "" %> text:
 
+<% if @has_selection %>
+## Selected text to summarize:
+<%= @selection %>
+
+<% if @full_content.present? && @full_content != @selection %>
+## Full document context (for reference - may help understand the selection):
+<%= @full_content %>
+<% end %>
+<% else %>
 <%= @content %>
+<% end %>
 
 <% if @max_words.present? %>
 Maximum summary length: <%= @max_words %> words
