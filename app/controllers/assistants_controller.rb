@@ -1,21 +1,16 @@
 class AssistantsController < ApplicationController
-  include ActionController::Live
-
   # Authentication is handled by ApplicationController via require_authentication
 
   def writing_improve
-    agent_response = WritingAssistantAgent.with(
+    stream_id = "writing_assistant_#{SecureRandom.hex(8)}"
+
+    WritingAssistantAgent.with(
       content: params[:content],
-      context: params[:context]
-    ).improve.generate_now
+      context: params[:context],
+      stream_id: stream_id
+    ).improve.generate_later
 
-    # Extract the content from the response
-    content = agent_response.respond_to?(:message) ? agent_response.message.content : agent_response.to_s
-
-    render json: {
-      improved_content: content,
-      status: :success
-    }
+    render json: { stream_id: stream_id }
   rescue => e
     Rails.logger.error "AssistantsController error: #{e.message}"
     Rails.logger.error e.backtrace.join("\n")
@@ -23,17 +18,14 @@ class AssistantsController < ApplicationController
   end
 
   def writing_grammar
-    agent_response = WritingAssistantAgent.with(
-      content: params[:content]
-    ).grammar.generate_now
+    stream_id = "writing_assistant_#{SecureRandom.hex(8)}"
 
-    # Extract the content from the response
-    content = agent_response.respond_to?(:message) ? agent_response.message.content : agent_response.to_s
+    WritingAssistantAgent.with(
+      content: params[:content],
+      stream_id: stream_id
+    ).grammar.generate_later
 
-    render json: {
-      corrected_content: content,
-      status: :success
-    }
+    render json: { stream_id: stream_id }
   rescue => e
     Rails.logger.error "AssistantsController error: #{e.message}"
     Rails.logger.error e.backtrace.join("\n")
@@ -41,18 +33,15 @@ class AssistantsController < ApplicationController
   end
 
   def writing_style
-    agent_response = WritingAssistantAgent.with(
+    stream_id = "writing_assistant_#{SecureRandom.hex(8)}"
+
+    WritingAssistantAgent.with(
       content: params[:content],
-      style_guide: params[:style_guide]
-    ).style.generate_now
+      style_guide: params[:style_guide],
+      stream_id: stream_id
+    ).style.generate_later
 
-    # Extract the content from the response
-    content = agent_response.respond_to?(:message) ? agent_response.message.content : agent_response.to_s
-
-    render json: {
-      styled_content: content,
-      status: :success
-    }
+    render json: { stream_id: stream_id }
   rescue => e
     Rails.logger.error "AssistantsController error: #{e.message}"
     Rails.logger.error e.backtrace.join("\n")
@@ -60,18 +49,15 @@ class AssistantsController < ApplicationController
   end
 
   def writing_summarize
-    agent_response = WritingAssistantAgent.with(
+    stream_id = "writing_assistant_#{SecureRandom.hex(8)}"
+
+    WritingAssistantAgent.with(
       content: params[:content],
-      max_words: params[:max_words] || 150
-    ).summarize.generate_now
+      max_words: params[:max_words] || 150,
+      stream_id: stream_id
+    ).summarize.generate_later
 
-    # Extract the content from the response
-    content = agent_response.respond_to?(:message) ? agent_response.message.content : agent_response.to_s
-
-    render json: {
-      summary: content,
-      status: :success
-    }
+    render json: { stream_id: stream_id }
   rescue => e
     Rails.logger.error "AssistantsController error: #{e.message}"
     Rails.logger.error e.backtrace.join("\n")
@@ -79,19 +65,16 @@ class AssistantsController < ApplicationController
   end
 
   def writing_expand
-    agent_response = WritingAssistantAgent.with(
+    stream_id = "writing_assistant_#{SecureRandom.hex(8)}"
+
+    WritingAssistantAgent.with(
       content: params[:content],
       target_length: params[:target_length],
-      areas_to_expand: params[:areas_to_expand]
-    ).expand.generate_now
+      areas_to_expand: params[:areas_to_expand],
+      stream_id: stream_id
+    ).expand.generate_later
 
-    # Extract the content from the response
-    content = agent_response.respond_to?(:message) ? agent_response.message.content : agent_response.to_s
-
-    render json: {
-      expanded_content: content,
-      status: :success
-    }
+    render json: { stream_id: stream_id }
   rescue => e
     Rails.logger.error "AssistantsController error: #{e.message}"
     Rails.logger.error e.backtrace.join("\n")
@@ -99,19 +82,16 @@ class AssistantsController < ApplicationController
   end
 
   def writing_brainstorm
-    agent_response = WritingAssistantAgent.with(
+    stream_id = "writing_assistant_#{SecureRandom.hex(8)}"
+
+    WritingAssistantAgent.with(
       topic: params[:topic],
       context: params[:context],
-      number_of_ideas: params[:number_of_ideas] || 5
-    ).brainstorm.generate_now
+      number_of_ideas: params[:number_of_ideas] || 5,
+      stream_id: stream_id
+    ).brainstorm.generate_later
 
-    # Extract the content from the response
-    content = agent_response.respond_to?(:message) ? agent_response.message.content : agent_response.to_s
-
-    render json: {
-      ideas: content,
-      status: :success
-    }
+    render json: { stream_id: stream_id }
   rescue => e
     Rails.logger.error "AssistantsController error: #{e.message}"
     Rails.logger.error e.backtrace.join("\n")
@@ -119,20 +99,17 @@ class AssistantsController < ApplicationController
   end
 
   def research
-    agent_response = ResearchAssistantAgent.with(
+    stream_id = "research_assistant_#{SecureRandom.hex(8)}"
+
+    ResearchAssistantAgent.with(
       topic: params[:topic],
       context: params[:context],
       full_content: params[:full_content],
-      depth: params[:depth] || "standard"
-    ).research.generate_now
+      depth: params[:depth] || "standard",
+      stream_id: stream_id
+    ).research.generate_later
 
-    # Extract the content from the response
-    content = agent_response.respond_to?(:message) ? agent_response.message.content : agent_response.to_s
-
-    render json: {
-      research: content,
-      status: :success
-    }
+    render json: { stream_id: stream_id }
   rescue => e
     Rails.logger.error "ResearchAssistant error: #{e.message}"
     Rails.logger.error e.backtrace.join("\n")
@@ -142,42 +119,37 @@ class AssistantsController < ApplicationController
   def analyze_file
     file = params[:file]
     analysis_type = params[:analysis_type] || "general"
+    stream_id = "file_analyzer_#{SecureRandom.hex(8)}"
 
-    # Save uploaded file temporarily
-    temp_path = Rails.root.join('tmp', file.original_filename)
+    # Save uploaded file temporarily with unique name
+    temp_filename = "upload_#{SecureRandom.hex(8)}_#{file.original_filename}"
+    temp_path = Rails.root.join('tmp', temp_filename)
     File.open(temp_path, 'wb') do |f|
       f.write(file.read)
     end
 
-    agent_response = case file.content_type
+    case file.content_type
     when /pdf/
       FileAnalyzerAgent.with(
-        file_path: temp_path,
-        analysis_type: analysis_type
-      ).analyze_pdf.generate_now
+        file_path: temp_path.to_s,
+        analysis_type: analysis_type,
+        stream_id: stream_id
+      ).analyze_pdf.generate_later
     when /image/
       FileAnalyzerAgent.with(
-        file_path: temp_path,
-        description_detail: params[:detail_level]
-      ).analyze_image.generate_now
+        file_path: temp_path.to_s,
+        description_detail: params[:detail_level],
+        stream_id: stream_id
+      ).analyze_image.generate_later
     else
       FileAnalyzerAgent.with(
-        file_path: temp_path,
-        format: params[:format]
-      ).extract_text.generate_now
+        file_path: temp_path.to_s,
+        format: params[:format],
+        stream_id: stream_id
+      ).extract_text.generate_later
     end
 
-    # Extract the content from the response
-    content = agent_response.respond_to?(:message) ? agent_response.message.content : agent_response.to_s
-
-    # Clean up temp file
-    File.delete(temp_path) if File.exist?(temp_path)
-
-    render json: {
-      analysis: content,
-      file_type: file.content_type,
-      status: :success
-    }
+    render json: { stream_id: stream_id, file_type: file.content_type }
   rescue => e
     Rails.logger.error "FileAnalyzer error: #{e.message}"
     Rails.logger.error e.backtrace.join("\n")
@@ -193,6 +165,8 @@ class AssistantsController < ApplicationController
       return render json: { error: "Please provide an image file" }, status: :unprocessable_entity
     end
 
+    stream_id = "image_caption_#{SecureRandom.hex(8)}"
+
     # Save uploaded file temporarily with a unique name
     temp_filename = "upload_#{SecureRandom.hex(8)}_#{file.original_filename}"
     temp_path = Rails.root.join('tmp', temp_filename)
@@ -201,22 +175,13 @@ class AssistantsController < ApplicationController
       f.write(file.read)
     end
 
-    agent_response = FileAnalyzerAgent.with(
+    FileAnalyzerAgent.with(
       file_path: temp_path.to_s,
-      description_detail: params[:detail_level] || "medium"
-    ).analyze_image.generate_now
+      description_detail: params[:detail_level] || "medium",
+      stream_id: stream_id
+    ).analyze_image.generate_later
 
-    # Extract the content from the response
-    caption = agent_response.respond_to?(:message) ? agent_response.message.content : agent_response.to_s
-
-    # Clean up temp file
-    File.delete(temp_path) if File.exist?(temp_path)
-
-    render json: {
-      caption: caption,
-      filename: file.original_filename,
-      status: :success
-    }
+    render json: { stream_id: stream_id, filename: file.original_filename }
   rescue => e
     Rails.logger.error "Image caption error: #{e.message}"
     Rails.logger.error e.backtrace.join("\n")
