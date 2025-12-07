@@ -44,7 +44,6 @@ group :development do
 end
 
 group :test do
-  gem "capybara"
   gem "selenium-webdriver"
 end
 
@@ -55,3 +54,5 @@ gem 'activeagent', '~> 1.0.0'
 gem "openai"
 gem "ruby-anthropic"  # For Anthropic/Claude support
 gem "pdf-reader"  # For PDF analysis
+gem "capybara"  # Browser automation for research agent
+gem "cuprite"  # Headless Chrome driver for web browsing

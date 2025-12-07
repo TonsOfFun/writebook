@@ -103,16 +103,26 @@ POST /assistants/stream
 
 ## Configuration
 
-The research agent uses OpenAI GPT-4o for synthesis. Ensure you have set:
+The research agent uses the Ollama provider with the `gpt-oss:20b` model for local inference. Ensure Ollama is running:
 
 ```bash
-OPENAI_API_KEY=your_api_key_here
+# Start Ollama server
+ollama serve
+
+# Pull the model
+ollama pull gpt-oss:20b
 ```
 
-Or in Rails credentials:
-```yaml
-openai:
-  api_key: your_api_key_here
+The tool schemas follow OpenAI's Chat API format for compatibility:
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "tool_name",
+    "description": "...",
+    "parameters": {...}
+  }
+}
 ```
 
 ## Web Search Implementation

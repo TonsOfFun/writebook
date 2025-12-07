@@ -1,0 +1,19 @@
+{
+  "type": "function",
+  "name": "fill_form",
+  "description": "Fill in a form field with a value. Use this to enter text into search boxes, input fields, etc.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "field": {
+        "type": "string",
+        "description": "The name, id, or label of the form field to fill"
+      },
+      "value": {
+        "type": "string",
+        "description": "The value to enter into the field"
+      }
+    },
+    "required": ["field", "value"]
+  }
+}

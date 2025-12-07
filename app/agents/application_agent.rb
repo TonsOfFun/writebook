@@ -3,7 +3,8 @@ class ApplicationAgent < ActiveAgent::Base
 
   layout "agent"
 
-  generate_with :ollama, model: "gpt-oss:20b"
+  # generate_with :ollama, model: "gpt-oss:20b"
+  generate_with :openai, model: "gpt-4o"
 
   # Handle exceptions during streaming to prevent crashes
   def handle_exception(exception)

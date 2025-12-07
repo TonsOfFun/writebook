@@ -1,0 +1,18 @@
+{
+  "type": "function",
+  "name": "extract_links",
+  "description": "Extract all links from the current page or a specific element. Useful for finding search results or navigation options.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "selector": {
+        "type": "string",
+        "description": "CSS selector to limit link extraction to a specific area. Defaults to 'body'."
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Maximum number of links to return. Defaults to 10."
+      }
+    }
+  }
+}

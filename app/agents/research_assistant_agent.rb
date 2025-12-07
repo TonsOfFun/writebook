@@ -1,13 +1,15 @@
-require "net/http"
-require "uri"
-require "cgi"
-require "nokogiri"
+require "capybara"
+require "capybara/cuprite"
 
 class ResearchAssistantAgent < ApplicationAgent
+  class_attribute :browser_session, default: nil
+
   generate_with :openai,
     model: "gpt-4o",
+    base_url: "https://api.openai.com/v1",
     stream: true,
-    instructions: "You are a research assistant helping authors find and reference information for their writing. Use the available tools to search the web and read web pages, then synthesize your findings into a clear, well-organized summary with proper citations."
+    api_key: ENV['OPENAI_API_KEY'] || Rails.application.credentials.dig(:openai, :api_key),
+    instructions: "You are a research assistant helping authors find and reference information for their writing. You have browser tools to navigate the web, search for information, and extract content from pages. Use these tools to find relevant sources, then synthesize your findings into a clear, well-organized summary with proper citations."
 
   on_stream :broadcast_chunk
   on_stream_close :broadcast_complete
@@ -21,92 +23,194 @@ class ResearchAssistantAgent < ApplicationAgent
     prompt(tools: load_tools, tool_choice: "auto")
   end
 
-  # Tool method: Search the web for a query
-  def web_search(query:)
-    Rails.logger.info "[ResearchAgent] Tool called: web_search(#{query})"
+  # Tool method: Navigate to a URL
+  def navigate(url:)
+    Rails.logger.info "[ResearchAgent] Tool called: navigate(#{url})"
+    setup_browser_if_needed
 
-    encoded_query = CGI.escape(query)
-    search_url = "https://html.duckduckgo.com/html/?q=#{encoded_query}"
-
-    response = fetch_url(search_url)
-    return { error: "Search failed", results: [] } unless response[:success]
-
-    doc = Nokogiri::HTML(response[:body])
-    results = []
-
-    doc.css(".result").first(8).each do |result|
-      title_el = result.css(".result__title a").first
-      snippet_el = result.css(".result__snippet").first
-
-      next unless title_el
-
-      url = extract_url(title_el["href"])
-      next if url.blank? || url.include?("duckduckgo.com")
-
-      results << {
-        title: title_el.text.strip,
-        url: url,
-        snippet: snippet_el&.text&.strip || ""
-      }
-    end
-
-    Rails.logger.info "[ResearchAgent] Found #{results.length} results"
-    { query: query, results: results }
+    self.class.browser_session.visit(url)
+    {
+      success: true,
+      current_url: self.class.browser_session.current_url,
+      title: self.class.browser_session.title
+    }
   rescue => e
-    Rails.logger.error "[ResearchAgent] Search error: #{e.message}"
-    { error: e.message, results: [] }
+    Rails.logger.error "[ResearchAgent] Navigate error: #{e.message}"
+    { success: false, error: e.message }
   end
 
-  # Tool method: Read a single webpage
-  def read_webpage(url:)
-    Rails.logger.info "[ResearchAgent] Tool called: read_webpage(#{url})"
+  # Tool method: Click on an element
+  def click(selector: nil, text: nil)
+    Rails.logger.info "[ResearchAgent] Tool called: click(selector=#{selector}, text=#{text})"
+    setup_browser_if_needed
 
-    response = fetch_url(url)
-    return { error: "Failed to fetch page", url: url, content: "" } unless response[:success]
+    if text
+      self.class.browser_session.click_on(text)
+    elsif selector
+      self.class.browser_session.find(selector).click
+    else
+      return { success: false, error: "Must provide either selector or text" }
+    end
 
-    doc = Nokogiri::HTML(response[:body])
+    {
+      success: true,
+      current_url: self.class.browser_session.current_url,
+      title: self.class.browser_session.title
+    }
+  rescue => e
+    Rails.logger.error "[ResearchAgent] Click error: #{e.message}"
+    { success: false, error: e.message }
+  end
 
-    # Remove unwanted elements
-    doc.css("script, style, nav, header, footer, aside, .sidebar, .navigation, .menu, .ad, .advertisement, .social-share, .comments, noscript").remove
+  # Tool method: Fill in a form field
+  def fill_form(field:, value:)
+    Rails.logger.info "[ResearchAgent] Tool called: fill_form(#{field}, #{value})"
+    setup_browser_if_needed
 
-    # Get main content
-    main_content = doc.css("main, article, .content, .post, .entry, #content, .article-body, .post-content").first
-    content_element = main_content || doc.css("body").first
+    self.class.browser_session.fill_in(field, with: value)
+    { success: true }
+  rescue => e
+    Rails.logger.error "[ResearchAgent] Fill form error: #{e.message}"
+    { success: false, error: e.message }
+  end
 
-    # Extract text
-    text = content_element&.text&.gsub(/\s+/, " ")&.strip || ""
+  # Tool method: Extract text from the page
+  def extract_text(selector: "body")
+    Rails.logger.info "[ResearchAgent] Tool called: extract_text(#{selector})"
+    setup_browser_if_needed
+
+    element = self.class.browser_session.find(selector)
+    text = element.text.gsub(/\s+/, " ").strip
 
     # Limit content length
     text = text[0..6000] if text.length > 6000
 
-    Rails.logger.info "[ResearchAgent] Extracted #{text.length} characters from #{url}"
-    { url: url, content: text }
+    {
+      success: true,
+      text: text,
+      current_url: self.class.browser_session.current_url
+    }
   rescue => e
-    Rails.logger.error "[ResearchAgent] Read error for #{url}: #{e.message}"
-    { error: e.message, url: url, content: "" }
+    Rails.logger.error "[ResearchAgent] Extract text error: #{e.message}"
+    { success: false, error: e.message, text: "" }
   end
 
-  # Tool method: Fetch multiple pages at once
-  def fetch_top_pages(urls:)
-    Rails.logger.info "[ResearchAgent] Tool called: fetch_top_pages(#{urls.length} urls)"
+  # Tool method: Extract main content from a page (smart content detection)
+  def extract_main_content
+    Rails.logger.info "[ResearchAgent] Tool called: extract_main_content"
+    setup_browser_if_needed
 
-    # Limit to 5 pages max
-    urls_to_fetch = urls.first(5)
-    pages = []
+    content_selectors = [
+      "#mw-content-text",  # Wikipedia
+      "main",
+      "article",
+      "[role='main']",
+      ".content",
+      "#content",
+      ".article-body",
+      ".post-content"
+    ]
 
-    urls_to_fetch.each do |url|
-      result = read_webpage(url: url)
-      pages << result unless result[:content].blank?
+    text = nil
+    selector_used = nil
+
+    content_selectors.each do |selector|
+      if self.class.browser_session.has_css?(selector, wait: 0)
+        element = self.class.browser_session.find(selector)
+        text = element.text.gsub(/\s+/, " ").strip
+        selector_used = selector
+        break if text.present?
+      end
     end
 
-    { pages: pages, fetched_count: pages.length }
+    text ||= self.class.browser_session.find("body").text.gsub(/\s+/, " ").strip
+    text = text[0..6000] if text.length > 6000
+
+    {
+      success: true,
+      content: text,
+      selector_used: selector_used,
+      current_url: self.class.browser_session.current_url,
+      title: self.class.browser_session.title
+    }
+  rescue => e
+    Rails.logger.error "[ResearchAgent] Extract main content error: #{e.message}"
+    { success: false, error: e.message, content: "" }
+  end
+
+  # Tool method: Extract all links from the page
+  def extract_links(selector: "body", limit: 10)
+    Rails.logger.info "[ResearchAgent] Tool called: extract_links(#{selector}, limit=#{limit})"
+    setup_browser_if_needed
+
+    links = []
+    within_element = (selector == "body") ? self.class.browser_session : self.class.browser_session.find(selector)
+
+    within_element.all("a", visible: true).first(limit).each do |link|
+      href = link["href"]
+      next if href.nil? || href.empty? || href.start_with?("#") || href.start_with?("javascript:")
+
+      links << {
+        text: link.text.strip,
+        href: href,
+        title: link["title"]
+      }
+    end
+
+    {
+      success: true,
+      links: links,
+      current_url: self.class.browser_session.current_url
+    }
+  rescue => e
+    Rails.logger.error "[ResearchAgent] Extract links error: #{e.message}"
+    { success: false, error: e.message, links: [] }
+  end
+
+  # Tool method: Get current page info
+  def page_info
+    Rails.logger.info "[ResearchAgent] Tool called: page_info"
+    setup_browser_if_needed
+
+    has_elements = {}
+    %w[form input button a img].each do |tag|
+      has_elements[tag] = self.class.browser_session.has_css?(tag, wait: 0)
+    end
+
+    {
+      success: true,
+      current_url: self.class.browser_session.current_url,
+      title: self.class.browser_session.title,
+      has_elements: has_elements
+    }
+  rescue => e
+    Rails.logger.error "[ResearchAgent] Page info error: #{e.message}"
+    { success: false, error: e.message }
+  end
+
+  # Tool method: Go back to previous page
+  def go_back
+    Rails.logger.info "[ResearchAgent] Tool called: go_back"
+    setup_browser_if_needed
+
+    self.class.browser_session.go_back
+    sleep 0.5
+
+    {
+      success: true,
+      current_url: self.class.browser_session.current_url,
+      title: self.class.browser_session.title
+    }
+  rescue => e
+    Rails.logger.error "[ResearchAgent] Go back error: #{e.message}"
+    { success: false, error: e.message }
   end
 
   private
 
   # Load tool definitions from JSON view templates
   def load_tools
-    tool_names = %w[web_search read_webpage fetch_top_pages]
+    tool_names = %w[navigate click fill_form extract_text extract_main_content extract_links page_info go_back]
 
     tool_names.map do |tool_name|
       load_tool_schema(tool_name)
@@ -133,48 +237,29 @@ class ResearchAssistantAgent < ApplicationAgent
     raise e
   end
 
-  def fetch_url(url)
-    uri = URI.parse(url)
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = (uri.scheme == "https")
-    http.open_timeout = 10
-    http.read_timeout = 15
+  def setup_browser_if_needed
+    return if self.class.browser_session
 
-    request = Net::HTTP::Get.new(uri.request_uri)
-    request["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    request["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-    request["Accept-Language"] = "en-US,en;q=0.5"
-
-    response = http.request(request)
-
-    if response.is_a?(Net::HTTPRedirection) && response["location"]
-      redirect_url = response["location"]
-      redirect_url = URI.join(url, redirect_url).to_s unless redirect_url.start_with?("http")
-      return fetch_url(redirect_url)
+    # Configure Cuprite driver if not already configured
+    unless Capybara.drivers[:cuprite_research]
+      Capybara.register_driver :cuprite_research do |app|
+        Capybara::Cuprite::Driver.new(
+          app,
+          window_size: [ 1920, 1080 ],
+          browser_options: {
+            "no-sandbox": nil,
+            "disable-gpu": nil,
+            "disable-dev-shm-usage": nil
+          },
+          inspector: false,
+          headless: true,
+          timeout: 30
+        )
+      end
     end
 
-    {
-      success: response.is_a?(Net::HTTPSuccess),
-      body: response.body&.force_encoding("UTF-8"),
-      status: response.code
-    }
-  rescue => e
-    Rails.logger.error "[ResearchAgent] Fetch error for #{url}: #{e.message}"
-    { success: false, body: "", status: "error" }
-  end
-
-  def extract_url(ddg_url)
-    return "" unless ddg_url
-
-    if ddg_url.include?("uddg=")
-      decoded = CGI.unescape(ddg_url)
-      match = decoded.match(/uddg=([^&]+)/)
-      return CGI.unescape(match[1]) if match
-    end
-
-    ddg_url
-  rescue
-    ddg_url
+    # Create a shared session for this agent class
+    self.class.browser_session = Capybara::Session.new(:cuprite_research)
   end
 
   def broadcast_chunk(chunk)
