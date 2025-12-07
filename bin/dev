@@ -1,5 +1,10 @@
 #!/usr/bin/env sh
 
+if ! gem list foreman -i --silent; then
+  echo "Installing foreman..."
+  gem install foreman
+fi
+
 echo "Starting Writebook on http://localhost:3011"
 
-exec ./bin/rails server -p 3011
+exec foreman start -f Procfile.dev "$@"

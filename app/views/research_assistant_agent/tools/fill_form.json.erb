@@ -1,17 +1,17 @@
 {
   "type": "function",
   "name": "fill_form",
-  "description": "Fill in a form field with a value. Use this to enter text into search boxes, input fields, etc.",
+  "description": "Fill in a form field with a value. Example: fill_form(field: \"q\", value: \"search term\") for Google search box.",
   "parameters": {
     "type": "object",
     "properties": {
       "field": {
         "type": "string",
-        "description": "The name, id, or label of the form field to fill"
+        "description": "The name, id, or label of the form field (e.g., 'q' for Google search, 'search' for other sites)"
       },
       "value": {
         "type": "string",
-        "description": "The value to enter into the field"
+        "description": "The text to enter into the field"
       }
     },
     "required": ["field", "value"]

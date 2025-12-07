@@ -4,9 +4,9 @@ require "capybara/cuprite"
 class ResearchAssistantAgent < ApplicationAgent
   class_attribute :browser_session, default: nil
 
-  generate_with :openai,
-    model: "gpt-4o",
-    base_url: "https://api.openai.com/v1",
+  generate_with :ollama,
+    model: "gpt-oss:20b",
+    base_url: "http://10.147.19.111:11434/v1",
     stream: true,
     api_key: ENV['OPENAI_API_KEY'] || Rails.application.credentials.dig(:openai, :api_key),
     instructions: "You are a research assistant helping authors find and reference information for their writing. You have browser tools to navigate the web, search for information, and extract content from pages. Use these tools to find relevant sources, then synthesize your findings into a clear, well-organized summary with proper citations."
