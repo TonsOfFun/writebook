@@ -7,7 +7,7 @@ class ResearchAssistantAgent < ApplicationAgent
   generate_with :openai,
     model: "gpt-4o",
     stream: true,
-    instructions: "You are a research assistant helping authors find and reference information for their writing. Synthesize the provided research into a clear, well-organized summary with proper citations."
+    instructions: "You are a research assistant helping authors find and reference information for their writing. Use the available tools to search the web and read web pages, then synthesize your findings into a clear, well-organized summary with proper citations."
 
   on_stream :broadcast_chunk
   on_stream_close :broadcast_complete
@@ -18,23 +18,18 @@ class ResearchAssistantAgent < ApplicationAgent
     @full_content = params[:full_content]
     @depth = params[:depth] || "standard"
 
-    # Perform web research before AI synthesis
-    @search_results = perform_web_search(@topic)
-    @page_contents = fetch_top_pages(@search_results, max_pages: 3)
-
-    prompt
+    prompt(tools: load_tools, tool_choice: "auto")
   end
 
-  private
-
-  def perform_web_search(query)
-    Rails.logger.info "[ResearchAgent] Searching for: #{query}"
+  # Tool method: Search the web for a query
+  def web_search(query:)
+    Rails.logger.info "[ResearchAgent] Tool called: web_search(#{query})"
 
     encoded_query = CGI.escape(query)
     search_url = "https://html.duckduckgo.com/html/?q=#{encoded_query}"
 
     response = fetch_url(search_url)
-    return [] unless response[:success]
+    return { error: "Search failed", results: [] } unless response[:success]
 
     doc = Nokogiri::HTML(response[:body])
     results = []
@@ -56,34 +51,18 @@ class ResearchAssistantAgent < ApplicationAgent
     end
 
     Rails.logger.info "[ResearchAgent] Found #{results.length} results"
-    results
+    { query: query, results: results }
   rescue => e
     Rails.logger.error "[ResearchAgent] Search error: #{e.message}"
-    []
+    { error: e.message, results: [] }
   end
 
-  def fetch_top_pages(results, max_pages: 3)
-    pages = []
-
-    results.first(max_pages).each do |result|
-      content = read_webpage(result[:url])
-      next if content[:content].blank?
-
-      pages << {
-        title: result[:title],
-        url: result[:url],
-        content: content[:content]
-      }
-    end
-
-    pages
-  end
-
-  def read_webpage(url)
-    Rails.logger.info "[ResearchAgent] Reading webpage: #{url}"
+  # Tool method: Read a single webpage
+  def read_webpage(url:)
+    Rails.logger.info "[ResearchAgent] Tool called: read_webpage(#{url})"
 
     response = fetch_url(url)
-    return { content: "", error: "Failed to fetch page" } unless response[:success]
+    return { error: "Failed to fetch page", url: url, content: "" } unless response[:success]
 
     doc = Nokogiri::HTML(response[:body])
 
@@ -101,10 +80,57 @@ class ResearchAssistantAgent < ApplicationAgent
     text = text[0..6000] if text.length > 6000
 
     Rails.logger.info "[ResearchAgent] Extracted #{text.length} characters from #{url}"
-    { content: text, url: url }
+    { url: url, content: text }
   rescue => e
     Rails.logger.error "[ResearchAgent] Read error for #{url}: #{e.message}"
-    { content: "", error: e.message }
+    { error: e.message, url: url, content: "" }
+  end
+
+  # Tool method: Fetch multiple pages at once
+  def fetch_top_pages(urls:)
+    Rails.logger.info "[ResearchAgent] Tool called: fetch_top_pages(#{urls.length} urls)"
+
+    # Limit to 5 pages max
+    urls_to_fetch = urls.first(5)
+    pages = []
+
+    urls_to_fetch.each do |url|
+      result = read_webpage(url: url)
+      pages << result unless result[:content].blank?
+    end
+
+    { pages: pages, fetched_count: pages.length }
+  end
+
+  private
+
+  # Load tool definitions from JSON view templates
+  def load_tools
+    tool_names = %w[web_search read_webpage fetch_top_pages]
+
+    tool_names.map do |tool_name|
+      load_tool_schema(tool_name)
+    end
+  end
+
+  # Load a single tool schema from its JSON view template
+  def load_tool_schema(tool_name)
+    template_path = "tools/#{tool_name}"
+
+    # Use the view rendering system to load the JSON template
+    json_content = render_to_string(
+      template: "research_assistant_agent/#{template_path}",
+      formats: [:json],
+      layout: false
+    )
+
+    JSON.parse(json_content, symbolize_names: true)
+  rescue ActionView::MissingTemplate => e
+    Rails.logger.error "[ResearchAgent] Missing tool template: #{template_path}"
+    raise e
+  rescue JSON::ParserError => e
+    Rails.logger.error "[ResearchAgent] Invalid JSON in tool template: #{template_path}"
+    raise e
   end
 
   def fetch_url(url)

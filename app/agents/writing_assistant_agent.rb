@@ -1,6 +1,6 @@
 class WritingAssistantAgent < ApplicationAgent
-  generate_with :openai,
-    model: "gpt-4o-mini",
+  generate_with :ollama,
+    model: "gpt-oss:20b",
     stream: true,
     instructions: "You are an expert writing assistant helping authors create and improve their content for books."
 

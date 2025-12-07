@@ -2,14 +2,16 @@
 
 ## Overview
 
-The Research Assistant is an AI-powered writing assistant that helps authors find and reference information on topics they're writing about. It performs automated web searches, fetches and parses relevant web pages, and synthesizes the findings into a well-organized research summary with proper citations.
+The Research Assistant is an AI-powered writing assistant that helps authors find and reference information on topics they're writing about. It uses **AI tool calling** to autonomously search the web, fetch and parse relevant web pages, and synthesize the findings into a well-organized research summary with proper citations.
 
 ## How It Works
 
 1. **User Input**: Author provides a topic to research (either by typing or selecting text in the editor)
-2. **Web Search**: Agent performs a DuckDuckGo search for the topic
-3. **Page Fetching**: Top 3 most relevant pages are fetched and their content extracted
-4. **AI Synthesis**: OpenAI GPT-4o analyzes the collected information and produces:
+2. **AI Tool Calling**: The AI agent autonomously decides which tools to use:
+   - `web_search` - Search DuckDuckGo for relevant pages
+   - `read_webpage` - Fetch and extract content from a single URL
+   - `fetch_top_pages` - Batch fetch multiple URLs at once
+3. **AI Synthesis**: OpenAI GPT-4o analyzes the collected information and produces:
    - A comprehensive summary
    - Key facts and findings
    - Properly cited sources
@@ -23,29 +25,34 @@ The Research Assistant is an AI-powered writing assistant that helps authors fin
 │  (Stimulus JS)  │◀────│  (Rails)         │◀────│  (ActiveAgent)    │
 └─────────────────┘     └──────────────────┘     └───────────────────┘
                                                           │
-                              ┌────────────────────────────┤
-                              │                            │
-                              ▼                            ▼
-                     ┌─────────────────┐         ┌─────────────────┐
-                     │  DuckDuckGo     │         │    OpenAI       │
-                     │  HTML Search    │         │    GPT-4o       │
-                     └─────────────────┘         └─────────────────┘
-                              │
-                              ▼
-                     ┌─────────────────┐
-                     │  Web Pages      │
-                     │  (Nokogiri)     │
-                     └─────────────────┘
+                                                          ▼
+                                                 ┌─────────────────┐
+                                                 │    OpenAI       │
+                                                 │    GPT-4o       │
+                                                 │  (Tool Calling) │
+                                                 └─────────────────┘
+                                                          │
+                              ┌────────────────┬──────────┴──────────┐
+                              ▼                ▼                     ▼
+                     ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+                     │   web_search    │ │  read_webpage   │ │ fetch_top_pages │
+                     │  (DuckDuckGo)   │ │   (Nokogiri)    │ │   (Nokogiri)    │
+                     └─────────────────┘ └─────────────────┘ └─────────────────┘
 ```
 
 ## Files
 
 ### Agent
-- `app/agents/research_assistant_agent.rb` - Main agent class with web search and page fetching capabilities
+- `app/agents/research_assistant_agent.rb` - Main agent class with tool methods for web research
 
 ### Views
-- `app/views/research_assistant_agent/research.text.erb` - Prompt template for AI synthesis
+- `app/views/research_assistant_agent/research.text.erb` - Prompt template for research action
 - `app/views/research_assistant_agent/instructions.text.erb` - System instructions
+
+### Tool Schemas (JSON Views)
+- `app/views/research_assistant_agent/tools/web_search.json.erb` - Web search tool definition
+- `app/views/research_assistant_agent/tools/read_webpage.json.erb` - Page reader tool definition
+- `app/views/research_assistant_agent/tools/fetch_top_pages.json.erb` - Batch page fetcher tool definition
 
 ### Controller
 - `app/controllers/assistants_controller.rb` - Added `research` action and streaming support

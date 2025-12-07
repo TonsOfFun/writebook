@@ -124,7 +124,7 @@ class AssistantsController < ApplicationController
       context: params[:context],
       full_content: params[:full_content],
       depth: params[:depth] || "standard"
-    ).research.generate_now
+    ).prompt.generate_now
 
     # Extract the content from the response
     content = agent_response.respond_to?(:message) ? agent_response.message.content : agent_response.to_s

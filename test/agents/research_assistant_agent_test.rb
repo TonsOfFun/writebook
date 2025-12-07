@@ -11,6 +11,18 @@ class ResearchAssistantAgentTest < ActiveSupport::TestCase
     assert ResearchAssistantAgent.instance_methods.include?(:research)
   end
 
+  test "has public web_search tool method" do
+    assert ResearchAssistantAgent.public_instance_methods.include?(:web_search)
+  end
+
+  test "has public read_webpage tool method" do
+    assert ResearchAssistantAgent.public_instance_methods.include?(:read_webpage)
+  end
+
+  test "has public fetch_top_pages tool method" do
+    assert ResearchAssistantAgent.public_instance_methods.include?(:fetch_top_pages)
+  end
+
   test "research sets topic and context instance variables" do
     agent = ResearchAssistantAgent.new
     agent.params = { topic: "climate change", context: "scientific article", depth: "standard" }
