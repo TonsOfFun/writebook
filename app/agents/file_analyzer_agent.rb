@@ -49,8 +49,15 @@ class FileAnalyzerAgent < ApplicationAgent
 
   # Sets up context persistence and records the analysis request
   def setup_context_and_prompt(user_message)
-    # Create a new context, optionally associated with a contextable record
-    create_context(contextable: params[:contextable])
+    # Create a new context with input parameters for audit trail
+    create_context(
+      contextable: params[:contextable],
+      input_params: {
+        file_path: @file_path,
+        file_name: @file_path ? File.basename(@file_path) : nil,
+        description_detail: @description_detail
+      }.compact
+    )
 
     # Record the user's analysis request
     add_user_message(user_message)

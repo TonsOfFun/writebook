@@ -20,8 +20,15 @@ class ResearchAssistantAgent < ApplicationAgent
     @full_content = params[:full_content]
     @depth = params[:depth] || "standard"
 
-    # Create context and record the research request
-    create_context(contextable: params[:contextable])
+    # Create context and record the research request with input parameters
+    create_context(
+      contextable: params[:contextable],
+      input_params: {
+        topic: @topic,
+        depth: @depth,
+        has_full_content: @full_content.present?
+      }.compact
+    )
     add_user_message(research_user_message)
 
     prompt(tools: load_tools, tool_choice: "auto")

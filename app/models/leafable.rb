@@ -4,6 +4,8 @@ module Leafable
   TYPES = %w[ Page Section Picture ]
 
   included do
+    include SolidAgent::Contextable
+
     has_one :leaf, as: :leafable, inverse_of: :leafable, touch: true
     has_one :book, through: :leaf
 

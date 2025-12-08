@@ -21,7 +21,7 @@
 #
 # @example Using context in an agent action
 #   class ChatAgent < ApplicationAgent
-#     has_context
+#     has_context  # auto_save: true by default - automatically persists generations
 #
 #     def chat
 #       # Load or create context
@@ -33,15 +33,11 @@
 #       # Set up the prompt with context history
 #       prompt messages: context.messages.map(&:to_message_hash)
 #     end
-#
-#     after_generation :save_response
-#
-#     private
-#
-#     def save_response
-#       context.record_generation!(response) if response&.success?
-#     end
 #   end
+#
+# @example Accessing persisted response after generation
+#   response = ChatAgent.with(user: current_user, message: "Hello").chat.generate_now
+#   # The generation is automatically persisted to AgentContext/AgentGeneration
 #
 module SolidAgent
   extend ActiveSupport::Concern
@@ -50,8 +46,8 @@ module SolidAgent
     # Class-level configuration for context persistence
     class_attribute :context_config, default: {}
 
-    # Instance-level context accessor
-    attr_accessor :context
+    # Instance-level context and response accessors
+    attr_accessor :context, :generation_response
   end
 
   class_methods do
@@ -86,7 +82,7 @@ module SolidAgent
 
       # Add callback to save generation results if auto_save is enabled
       if auto_save
-        after_generation :persist_generation_to_context
+        around_generation :capture_and_persist_generation
       end
     end
   end
@@ -212,14 +208,30 @@ module SolidAgent
 
   private
 
-  # Callback to persist generation results to context
+  # Around callback to capture the response and persist to context
+  # This is necessary because after_generation doesn't have access to the response
+  def capture_and_persist_generation
+    self.generation_response = yield
+    persist_generation_to_context
+    generation_response
+  end
+
+  # Persists the generation response to context
   def persist_generation_to_context
-    return unless context && response&.success?
+    return unless context && generation_response
 
     begin
-      context.record_generation!(response)
+      # For streaming responses, raw_response may be nil but we still have the message
+      # Check if we have a valid response with content
+      if generation_response.respond_to?(:message) && generation_response.message&.content.present?
+        context.record_generation!(generation_response)
+        Rails.logger.info "[SolidAgent] Persisted generation to context #{context.id}"
+      else
+        Rails.logger.warn "[SolidAgent] Skipping persistence - no message content in response"
+      end
     rescue => e
       Rails.logger.error "[SolidAgent] Failed to persist generation: #{e.message}"
+      Rails.logger.error e.backtrace.first(5).join("\n")
     end
   end
 

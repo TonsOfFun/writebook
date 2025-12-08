@@ -1,5 +1,5 @@
 class Book < ApplicationRecord
-  include Accessable, Sluggable
+  include Accessable, Sluggable, SolidAgent::Contextable
 
   has_many :leaves, dependent: :destroy
   has_one_attached :cover, dependent: :purge_later

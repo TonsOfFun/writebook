@@ -65,14 +65,34 @@ class WritingAssistantAgent < ApplicationAgent
 
   # Sets up context persistence and records the user's input
   def setup_context_and_prompt(user_message: nil)
-    # Create a new context, optionally associated with a contextable record
-    create_context(contextable: params[:contextable])
+    # Create a new context, optionally associated with a contextable record (Page, Book, etc.)
+    # Store the input parameters in context options for full audit trail
+    create_context(
+      contextable: params[:contextable],
+      input_params: context_input_params
+    )
 
     # Record the user's input message
     add_user_message(user_message || content_user_message)
 
     # Execute the prompt
     prompt
+  end
+
+  # Captures the relevant input parameters for context storage
+  def context_input_params
+    {
+      task: @task,
+      content: @content,
+      selection: @selection,
+      has_selection: @has_selection,
+      style_guide: @style_guide,
+      max_words: @max_words,
+      target_length: @target_length,
+      areas_to_expand: @areas_to_expand,
+      topic: @topic,
+      number_of_ideas: @number_of_ideas
+    }.compact
   end
 
   # Builds a user message for content-based actions (improve, grammar, style, etc.)
