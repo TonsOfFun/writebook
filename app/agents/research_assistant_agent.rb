@@ -4,6 +4,9 @@ require "capybara/cuprite"
 class ResearchAssistantAgent < ApplicationAgent
   class_attribute :browser_session, default: nil
 
+  # Enable context persistence for tracking research sessions
+  has_context
+
   generate_with :openai,
     model: "gpt-4o",
     stream: true
@@ -16,6 +19,10 @@ class ResearchAssistantAgent < ApplicationAgent
     @context = params[:context]
     @full_content = params[:full_content]
     @depth = params[:depth] || "standard"
+
+    # Create context and record the research request
+    create_context(contextable: params[:contextable])
+    add_user_message(research_user_message)
 
     prompt(tools: load_tools, tool_choice: "auto")
   end
@@ -204,6 +211,15 @@ class ResearchAssistantAgent < ApplicationAgent
   end
 
   private
+
+  # Builds a user message describing the research request
+  def research_user_message
+    message_parts = ["Research request"]
+    message_parts << "Topic: #{@topic}" if @topic.present?
+    message_parts << "Context: #{@context}" if @context.present?
+    message_parts << "Depth: #{@depth}"
+    message_parts.join("\n\n")
+  end
 
   # Load tool definitions from JSON view templates
   def load_tools

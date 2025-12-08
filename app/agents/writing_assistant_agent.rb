@@ -1,4 +1,7 @@
 class WritingAssistantAgent < ApplicationAgent
+  # Enable context persistence for tracking prompts and generations
+  has_context
+
   generate_with :openai,
     model: "gpt-4o",
     stream: true,
@@ -10,27 +13,27 @@ class WritingAssistantAgent < ApplicationAgent
   def improve
     setup_content_params
     @task = "improve the writing quality, clarity, and engagement"
-    prompt
+    setup_context_and_prompt
   end
 
   def grammar
     setup_content_params
     @task = "check and correct grammar, punctuation, and spelling"
-    prompt
+    setup_context_and_prompt
   end
 
   def style
     setup_content_params
     @style_guide = params[:style_guide]
     @task = "adjust the writing style and tone"
-    prompt
+    setup_context_and_prompt
   end
 
   def summarize
     setup_content_params
     @max_words = params[:max_words]
     @task = "create a concise summary"
-    prompt
+    setup_context_and_prompt
   end
 
   def expand
@@ -38,7 +41,7 @@ class WritingAssistantAgent < ApplicationAgent
     @target_length = params[:target_length]
     @areas_to_expand = params[:areas_to_expand]
     @task = "expand and elaborate on the content"
-    prompt
+    setup_context_and_prompt
   end
 
   def brainstorm
@@ -47,7 +50,7 @@ class WritingAssistantAgent < ApplicationAgent
     @full_content = params[:full_content]
     @number_of_ideas = params[:number_of_ideas]
     @task = "generate creative ideas and suggestions"
-    prompt
+    setup_context_and_prompt(user_message: brainstorm_user_message)
   end
 
   private
@@ -58,6 +61,36 @@ class WritingAssistantAgent < ApplicationAgent
     @full_content = params[:full_content]
     @context = params[:context]
     @has_selection = @selection.present?
+  end
+
+  # Sets up context persistence and records the user's input
+  def setup_context_and_prompt(user_message: nil)
+    # Create a new context, optionally associated with a contextable record
+    create_context(contextable: params[:contextable])
+
+    # Record the user's input message
+    add_user_message(user_message || content_user_message)
+
+    # Execute the prompt
+    prompt
+  end
+
+  # Builds a user message for content-based actions (improve, grammar, style, etc.)
+  def content_user_message
+    message_parts = ["Task: #{@task}"]
+    message_parts << "Content: #{@content}" if @content.present?
+    message_parts << "Selection: #{@selection}" if @selection.present?
+    message_parts << "Context: #{@context}" if @context.present?
+    message_parts.join("\n\n")
+  end
+
+  # Builds a user message for brainstorm action
+  def brainstorm_user_message
+    message_parts = ["Task: #{@task}"]
+    message_parts << "Topic: #{@topic}" if @topic.present?
+    message_parts << "Context: #{@context}" if @context.present?
+    message_parts << "Number of ideas requested: #{@number_of_ideas}" if @number_of_ideas.present?
+    message_parts.join("\n\n")
   end
 
   def broadcast_chunk(chunk)

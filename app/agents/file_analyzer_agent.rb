@@ -1,6 +1,9 @@
 require 'base64'
 
 class FileAnalyzerAgent < ApplicationAgent
+  # Enable context persistence for tracking file analysis sessions
+  has_context
+
   generate_with :openai,
     model: "gpt-4o",
     stream: true,
@@ -13,10 +16,11 @@ class FileAnalyzerAgent < ApplicationAgent
   before_prompt :encode_image_for_prompt, only: :analyze_image
 
   def analyze_pdf
+    @file_path = params[:file_path]
     # Read PDF content (would need pdf-reader gem)
     @content = extract_pdf_content(@file_path) if @file_path
 
-    prompt
+    setup_context_and_prompt("Analyze PDF: #{@file_path}")
   end
 
   def analyze_image
@@ -24,22 +28,36 @@ class FileAnalyzerAgent < ApplicationAgent
     @file_path = params[:file_path]
     @description_detail = params[:description_detail] || "medium"
 
-    prompt
+    setup_context_and_prompt("Analyze image: #{@file_path}, detail level: #{@description_detail}")
   end
 
   def extract_text
+    @file_path = params[:file_path]
     @content = extract_file_content(@file_path) if @file_path
 
-    prompt
+    setup_context_and_prompt("Extract text from: #{@file_path}")
   end
 
   def summarize_document
+    @file_path = params[:file_path]
     @content = extract_file_content(@file_path) if @file_path
 
-    prompt
+    setup_context_and_prompt("Summarize document: #{@file_path}")
   end
 
   private
+
+  # Sets up context persistence and records the analysis request
+  def setup_context_and_prompt(user_message)
+    # Create a new context, optionally associated with a contextable record
+    create_context(contextable: params[:contextable])
+
+    # Record the user's analysis request
+    add_user_message(user_message)
+
+    # Execute the prompt
+    prompt
+  end
 
   # Lazily encode image to base64 only when the prompt is about to be processed
   # This avoids holding large base64 strings in memory longer than necessary
