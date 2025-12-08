@@ -50,7 +50,7 @@ class WritingAssistantAgent < ApplicationAgent
     @full_content = params[:full_content]
     @number_of_ideas = params[:number_of_ideas]
     @task = "generate creative ideas and suggestions"
-    setup_context_and_prompt(user_message: brainstorm_user_message)
+    setup_context_and_prompt
   end
 
   private
@@ -63,8 +63,8 @@ class WritingAssistantAgent < ApplicationAgent
     @has_selection = @selection.present?
   end
 
-  # Sets up context persistence and records the user's input
-  def setup_context_and_prompt(user_message: nil)
+  # Sets up context persistence and triggers prompt rendering
+  def setup_context_and_prompt
     # Create a new context, optionally associated with a contextable record (Page, Book, etc.)
     # Store the input parameters in context options for full audit trail
     create_context(
@@ -72,10 +72,9 @@ class WritingAssistantAgent < ApplicationAgent
       input_params: context_input_params
     )
 
-    # Record the user's input message
-    add_user_message(user_message || content_user_message)
-
-    # Execute the prompt
+    # The prompt method will render the action template (e.g., improve.text.erb)
+    # which contains the full user message. The after_prompt callback will
+    # capture the rendered content for persistence.
     prompt
   end
 
@@ -93,24 +92,6 @@ class WritingAssistantAgent < ApplicationAgent
       topic: @topic,
       number_of_ideas: @number_of_ideas
     }.compact
-  end
-
-  # Builds a user message for content-based actions (improve, grammar, style, etc.)
-  def content_user_message
-    message_parts = ["Task: #{@task}"]
-    message_parts << "Content: #{@content}" if @content.present?
-    message_parts << "Selection: #{@selection}" if @selection.present?
-    message_parts << "Context: #{@context}" if @context.present?
-    message_parts.join("\n\n")
-  end
-
-  # Builds a user message for brainstorm action
-  def brainstorm_user_message
-    message_parts = ["Task: #{@task}"]
-    message_parts << "Topic: #{@topic}" if @topic.present?
-    message_parts << "Context: #{@context}" if @context.present?
-    message_parts << "Number of ideas requested: #{@number_of_ideas}" if @number_of_ideas.present?
-    message_parts.join("\n\n")
   end
 
   def broadcast_chunk(chunk)

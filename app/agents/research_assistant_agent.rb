@@ -20,7 +20,8 @@ class ResearchAssistantAgent < ApplicationAgent
     @full_content = params[:full_content]
     @depth = params[:depth] || "standard"
 
-    # Create context and record the research request with input parameters
+    # Create context with input parameters for audit trail
+    # The after_prompt callback from SolidAgent will persist the rendered template
     create_context(
       contextable: params[:contextable],
       input_params: {
@@ -29,7 +30,6 @@ class ResearchAssistantAgent < ApplicationAgent
         has_full_content: @full_content.present?
       }.compact
     )
-    add_user_message(research_user_message)
 
     prompt(tools: load_tools, tool_choice: "auto")
   end
@@ -218,15 +218,6 @@ class ResearchAssistantAgent < ApplicationAgent
   end
 
   private
-
-  # Builds a user message describing the research request
-  def research_user_message
-    message_parts = ["Research request"]
-    message_parts << "Topic: #{@topic}" if @topic.present?
-    message_parts << "Context: #{@context}" if @context.present?
-    message_parts << "Depth: #{@depth}"
-    message_parts.join("\n\n")
-  end
 
   # Load tool definitions from JSON view templates
   def load_tools

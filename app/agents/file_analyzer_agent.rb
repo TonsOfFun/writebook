@@ -20,7 +20,7 @@ class FileAnalyzerAgent < ApplicationAgent
     # Read PDF content (would need pdf-reader gem)
     @content = extract_pdf_content(@file_path) if @file_path
 
-    setup_context_and_prompt("Analyze PDF: #{@file_path}")
+    setup_context_and_prompt
   end
 
   def analyze_image
@@ -28,27 +28,28 @@ class FileAnalyzerAgent < ApplicationAgent
     @file_path = params[:file_path]
     @description_detail = params[:description_detail] || "medium"
 
-    setup_context_and_prompt("Analyze image: #{@file_path}, detail level: #{@description_detail}")
+    setup_context_and_prompt
   end
 
   def extract_text
     @file_path = params[:file_path]
     @content = extract_file_content(@file_path) if @file_path
 
-    setup_context_and_prompt("Extract text from: #{@file_path}")
+    setup_context_and_prompt
   end
 
   def summarize_document
     @file_path = params[:file_path]
     @content = extract_file_content(@file_path) if @file_path
 
-    setup_context_and_prompt("Summarize document: #{@file_path}")
+    setup_context_and_prompt
   end
 
   private
 
-  # Sets up context persistence and records the analysis request
-  def setup_context_and_prompt(user_message)
+  # Sets up context persistence and triggers prompt rendering
+  # The after_prompt callback from SolidAgent will persist the rendered template
+  def setup_context_and_prompt
     # Create a new context with input parameters for audit trail
     create_context(
       contextable: params[:contextable],
@@ -59,10 +60,7 @@ class FileAnalyzerAgent < ApplicationAgent
       }.compact
     )
 
-    # Record the user's analysis request
-    add_user_message(user_message)
-
-    # Execute the prompt
+    # Execute the prompt - the action template will be rendered
     prompt
   end
 

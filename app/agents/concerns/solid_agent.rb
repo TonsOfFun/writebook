@@ -80,8 +80,9 @@ module SolidAgent
         auto_save: auto_save
       }
 
-      # Add callback to save generation results if auto_save is enabled
+      # Add callbacks to persist prompt context and generation results if auto_save is enabled
       if auto_save
+        after_prompt :persist_prompt_to_context
         around_generation :capture_and_persist_generation
       end
     end
@@ -207,6 +208,19 @@ module SolidAgent
   end
 
   private
+
+  # After prompt callback - persists the rendered prompt message to context
+  # This captures the fully rendered action template content from prompt_options[:messages]
+  def persist_prompt_to_context
+    return unless context
+
+    # The prompt_options[:messages] contains the rendered action template content
+    if prompt_options[:messages].present?
+      rendered_message = prompt_options[:messages].last
+      content = rendered_message.is_a?(Hash) ? rendered_message[:content] : rendered_message.to_s
+      add_user_message(content) if content.present?
+    end
+  end
 
   # Around callback to capture the response and persist to context
   # This is necessary because after_generation doesn't have access to the response
