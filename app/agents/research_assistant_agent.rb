@@ -2,14 +2,19 @@ require "capybara"
 require "capybara/cuprite"
 
 class ResearchAssistantAgent < ApplicationAgent
+  generate_with :openai,
+    model: "gpt-4o",
+    stream: true
+
+  include HasTools
+
   class_attribute :browser_session, default: nil
 
   # Enable context persistence for tracking research sessions
   has_context
 
-  generate_with :openai,
-    model: "gpt-4o",
-    stream: true
+  # Declare tools - auto-discovers from app/views/research_assistant_agent/tools/*.json.erb
+  has_tools :navigate, :click, :fill_form, :extract_text, :extract_main_content, :extract_links, :page_info, :go_back
 
   on_stream :broadcast_chunk
   on_stream_close :broadcast_complete
@@ -31,7 +36,7 @@ class ResearchAssistantAgent < ApplicationAgent
       }.compact
     )
 
-    prompt(tools: load_tools, tool_choice: "auto")
+    prompt(tools: tools, tool_choice: "auto")
   end
 
   # Tool method: Navigate to a URL
@@ -218,35 +223,6 @@ class ResearchAssistantAgent < ApplicationAgent
   end
 
   private
-
-  # Load tool definitions from JSON view templates
-  def load_tools
-    tool_names = %w[navigate click fill_form extract_text extract_main_content extract_links page_info go_back]
-
-    tool_names.map do |tool_name|
-      load_tool_schema(tool_name)
-    end
-  end
-
-  # Load a single tool schema from its JSON view template
-  def load_tool_schema(tool_name)
-    template_path = "tools/#{tool_name}"
-
-    # Use the view rendering system to load the JSON template
-    json_content = render_to_string(
-      template: "research_assistant_agent/#{template_path}",
-      formats: [:json],
-      layout: false
-    )
-
-    JSON.parse(json_content, symbolize_names: true)
-  rescue ActionView::MissingTemplate => e
-    Rails.logger.error "[ResearchAgent] Missing tool template: #{template_path}"
-    raise e
-  rescue JSON::ParserError => e
-    Rails.logger.error "[ResearchAgent] Invalid JSON in tool template: #{template_path}"
-    raise e
-  end
 
   def setup_browser_if_needed
     return if self.class.browser_session

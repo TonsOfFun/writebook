@@ -1,10 +1,14 @@
 #!/usr/bin/env sh
 
-if ! gem list foreman -i --silent; then
-  echo "Installing foreman..."
-  gem install foreman
+if ! command -v overmind > /dev/null; then
+  echo "Overmind not found. Install it with:"
+  echo "  brew install overmind"
+  echo "  or see https://github.com/DarthSim/overmind#installation"
+  exit 1
 fi
 
 echo "Starting Writebook on http://localhost:3011"
+echo "Use 'overmind connect <process>' to attach to a process (e.g., 'overmind connect web')"
+echo "Use 'overmind restart <process>' to restart a specific process"
 
-exec foreman start -f Procfile.dev "$@"
+exec overmind start -f Procfile.dev "$@"

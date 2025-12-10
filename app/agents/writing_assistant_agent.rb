@@ -79,11 +79,14 @@ class WritingAssistantAgent < ApplicationAgent
   end
 
   # Captures the relevant input parameters for context storage
+  # These params are used to rehydrate the view when rendering the context as a prompt
   def context_input_params
     {
       task: @task,
       content: @content,
       selection: @selection,
+      full_content: @full_content,
+      context: @context,
       has_selection: @has_selection,
       style_guide: @style_guide,
       max_words: @max_words,
