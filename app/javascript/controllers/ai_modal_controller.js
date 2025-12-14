@@ -214,7 +214,10 @@ export default class extends Controller {
   handleStreamMessage(message) {
     console.log('[AI Modal] Message received:', message)
 
-    if (message.content) {
+    if (message.tool_status) {
+      // Update status to show what tool is being executed
+      this.setStatus(message.tool_status.description, true)
+    } else if (message.content) {
       this.accumulatedContent += message.content
       // Render as markdown preview while streaming
       this.contentTarget.innerHTML = this.renderMarkdown(this.accumulatedContent)

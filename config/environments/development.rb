@@ -75,5 +75,5 @@ Rails.application.configure do
   # Use solid_queue for background jobs
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.logger = ActiveSupport::Logger.new(STDOUT)
-  # config.solid_queue.connects_to = { database: { writing: :queue, reading: :queue } }
+  config.solid_queue.connects_to = { database: { writing: :queue } }
 end

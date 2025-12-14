@@ -7,6 +7,7 @@ class ResearchAssistantAgent < ApplicationAgent
     stream: true
 
   include HasTools
+  include StreamsToolUpdates
 
   class_attribute :browser_session, default: nil
 
@@ -15,6 +16,16 @@ class ResearchAssistantAgent < ApplicationAgent
 
   # Declare tools - auto-discovers from app/views/research_assistant_agent/tools/*.json.erb
   has_tools :navigate, :click, :fill_form, :extract_text, :extract_main_content, :extract_links, :page_info, :go_back
+
+  # Custom tool descriptions for UI feedback during execution
+  tool_description :navigate, ->(args) { "Visiting #{args[:url] || 'page'}..." }
+  tool_description :click, ->(args) { args[:text] ? "Clicking '#{args[:text]}'..." : "Clicking element..." }
+  tool_description :fill_form, ->(args) { "Filling in #{args[:field] || 'form field'}..." }
+  tool_description :extract_text, "Reading page content..."
+  tool_description :extract_main_content, "Extracting main content..."
+  tool_description :extract_links, "Finding links on page..."
+  tool_description :page_info, "Analyzing page structure..."
+  tool_description :go_back, "Going back to previous page..."
 
   on_stream :broadcast_chunk
   on_stream_close :broadcast_complete

@@ -17,15 +17,22 @@ Please research the following topic and provide a comprehensive summary with sou
 
 Use your browser tools to research this topic. Here's a recommended workflow:
 
-1. navigate(url: "https://www.google.com") - Start at Google
-2. fill_form(field: "q", value: "<%= @topic %>") - Enter the search query
-3. click(text: "Google Search") - Submit the search
-4. extract_links() - Get the search result URLs
-5. navigate(url: "...") - Visit promising results
-6. extract_main_content() - Read the page content
-7. Repeat steps 5-6 for multiple sources
+**Option 1: Direct URL search (most reliable)**
+1. navigate(url: "https://duckduckgo.com/?q=<%= ERB::Util.url_encode(@topic) %>") - Go directly to search results
+2. extract_links() - Get the search result URLs
+3. navigate(url: "...") - Visit promising results
+4. extract_main_content() - Read the page content
+5. Repeat steps 3-4 for multiple sources
 
-Remember: fill_form requires both "field" and "value" parameters.
+**Option 2: If direct search doesn't work, go to authoritative sites directly**
+- For Ruby gems: navigate to "https://rubygems.org/gems/GEM_NAME" or "https://github.com/OWNER/REPO"
+- For general topics: navigate to "https://en.wikipedia.org/wiki/TOPIC"
+- For documentation: navigate to official docs sites
+
+**Tips:**
+- Always cite your sources with URLs
+- Prioritize official documentation, GitHub repos, and authoritative sources
+- Extract specific quotes and data when available
 
 ## Required Output Format
 

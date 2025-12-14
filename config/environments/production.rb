@@ -66,5 +66,5 @@ Rails.application.configure do
   config.active_record.sqlite3_production_warning = false
 
   config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue, reading: :queue } }
+  config.solid_queue.connects_to = { database: { writing: :queue } }
 end

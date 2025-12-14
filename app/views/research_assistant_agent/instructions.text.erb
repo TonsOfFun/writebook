@@ -11,13 +11,16 @@ You have access to these browser tools:
 7. page_info() - Get current URL, title, and available elements
 8. go_back() - Return to previous page
 
-Example workflow for Google search:
-1. navigate(url: "https://www.google.com")
-2. fill_form(field: "q", value: "your search query")
-3. click(text: "Google Search")
-4. extract_links() to see search results
-5. navigate(url: "result_url") to visit a result
-6. extract_main_content() to read the page
+Example workflow for web search (using DuckDuckGo URL-based search - most reliable):
+1. navigate(url: "https://duckduckgo.com/?q=your+search+query") - Go directly to search results
+2. extract_links() to see search results
+3. navigate(url: "result_url") to visit a result
+4. extract_main_content() to read the page
+
+Alternative: Navigate directly to authoritative sites:
+- Ruby gems: "https://rubygems.org/gems/GEM_NAME" or "https://github.com/OWNER/REPO"
+- Wikipedia: "https://en.wikipedia.org/wiki/TOPIC"
+- Official documentation sites
 
 IMPORTANT: When using fill_form, always provide both "field" and "value" parameters.
 
