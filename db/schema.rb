@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2025_12_01_222756) do
+ActiveRecord::Schema[8.2].define(version: 2025_12_18_183654) do
   create_table "accesses", force: :cascade do |t|
     t.integer "book_id", null: false
     t.datetime "created_at", null: false
@@ -134,6 +134,19 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_01_222756) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["published"], name: "index_books_on_published"
+  end
+
+  create_table "documents", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "document_type"
+    t.integer "page_count", default: 0
+    t.json "page_images", default: {}
+    t.json "page_text", default: {}
+    t.text "processing_error"
+    t.string "processing_status", default: "pending"
+    t.datetime "updated_at", null: false
+    t.index ["document_type"], name: "index_documents_on_document_type"
+    t.index ["processing_status"], name: "index_documents_on_processing_status"
   end
 
   create_table "edits", force: :cascade do |t|

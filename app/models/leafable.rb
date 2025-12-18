@@ -1,7 +1,7 @@
 module Leafable
   extend ActiveSupport::Concern
 
-  TYPES = %w[ Page Section Picture ]
+  TYPES = %w[ Page Section Picture Document ]
 
   included do
     include SolidAgent::Contextable
