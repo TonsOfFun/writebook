@@ -33,6 +33,63 @@
       <%= simple_format @leaf.picture.caption %>
     </figcaption>
   </figure>
+<% elsif @leaf.document? %>
+  <div class="page--document" data-controller="pdf-viewer" data-pdf-viewer-url-value="<%= @leaf.document.file.attached? ? rails_blob_path(@leaf.document.file) : '' %>">
+    <% if @leaf.document.file.attached? %>
+      <div class="document-viewer">
+        <div class="document-toolbar flex align-center justify-between pad gap">
+          <div class="document-info">
+            <span class="document-filename"><%= @leaf.document.file.filename %></span>
+            <% if @leaf.document.completed? %>
+              <span class="txt-muted txt-small">(<%= @leaf.document.page_count %> pages)</span>
+            <% end %>
+          </div>
+          <div class="document-actions flex gap-half">
+            <%= link_to rails_blob_path(@leaf.document.file, disposition: "attachment"), class: "btn btn--small" do %>
+              Download
+            <% end %>
+          </div>
+        </div>
+
+        <% if @leaf.document.pdf? %>
+          <div class="pdf-container" data-pdf-viewer-target="container">
+            <canvas data-pdf-viewer-target="canvas"></canvas>
+          </div>
+          <div class="pdf-navigation flex align-center justify-center gap pad">
+            <button class="btn btn--small" data-action="pdf-viewer#previousPage" data-pdf-viewer-target="prevBtn">Previous</button>
+            <span data-pdf-viewer-target="pageInfo">Page 1 of 1</span>
+            <button class="btn btn--small" data-action="pdf-viewer#nextPage" data-pdf-viewer-target="nextBtn">Next</button>
+          </div>
+        <% else %>
+          <div class="document-preview pad-double txt-center">
+            <p class="txt-muted">Preview not available for this document type.</p>
+            <p class="txt-small txt-muted">Download the file to view it.</p>
+          </div>
+        <% end %>
+
+        <% if @leaf.document.completed? && @leaf.document.searchable_content.present? %>
+          <details class="document-text-content margin-block">
+            <summary class="pad cursor-pointer">View extracted text</summary>
+            <div class="pad border-block-start">
+              <%= simple_format @leaf.document.searchable_content.truncate(5000) %>
+            </div>
+          </details>
+        <% elsif @leaf.document.processing? || @leaf.document.pending? %>
+          <div class="document-processing pad txt-center">
+            <p class="txt-muted">Text extraction in progress...</p>
+          </div>
+        <% elsif @leaf.document.failed? %>
+          <div class="document-error pad txt-center">
+            <p class="txt-error">Text extraction failed: <%= @leaf.document.processing_error %></p>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="document-empty pad-double txt-center">
+        <p class="txt-muted">No document uploaded</p>
+      </div>
+    <% end %>
+  </div>
 <% end %>
 
 <% content_for :footer do %>

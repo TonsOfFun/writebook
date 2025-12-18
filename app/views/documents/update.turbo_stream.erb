@@ -1,0 +1,3 @@
+<%= turbo_stream.replace dom_id(@leaf, :toc) do %>
+  <%= render "leaves/toc_item", leaf: @leaf %>
+<% end %>

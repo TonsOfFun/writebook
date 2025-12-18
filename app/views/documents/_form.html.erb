@@ -1,0 +1,34 @@
+<%= leafable_edit_form(document, id: "leafable-editor") do |form| %>
+  <label class="input input--file input--document unpad" data-controller="upload-preview">
+    <div class="document-upload-area flex flex-column align-center justify-center gap pad-double">
+      <% if document.file.attached? %>
+        <%= image_tag "document-icon.svg", alt: "Document", class: "document-icon", size: 64,
+            data: { upload_preview_target: "placeholder" }, style: "display: none" %>
+        <span class="document-filename" data-upload-preview-target="filename"><%= document.file.filename %></span>
+      <% else %>
+        <%= image_tag "document-icon.svg", alt: "Upload document", class: "document-icon", size: 64,
+            data: { upload_preview_target: "placeholder" } %>
+        <span class="txt-small txt-muted" data-upload-preview-target="filename">Choose a PDF, PPTX, or DOCX file</span>
+      <% end %>
+    </div>
+    <%= form.file_field :file, class: "input", accept: ".pdf,.pptx,.ppt,.docx", autofocus: true,
+        data: { upload_preview_target: "input", action: "upload-preview#previewFile" } %>
+  </label>
+
+  <% if document.persisted? && document.processing_status.present? %>
+    <div class="document-status margin-block">
+      <% case document.processing_status %>
+      <% when "pending" %>
+        <span class="badge badge--warning">Processing queued...</span>
+      <% when "processing" %>
+        <span class="badge badge--info">Extracting text...</span>
+      <% when "completed" %>
+        <span class="badge badge--success"><%= document.page_count %> pages extracted</span>
+      <% when "failed" %>
+        <span class="badge badge--error">Processing failed: <%= document.processing_error %></span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= form.submit "Save", hidden: true, data: { upload_preview_target: "button" } %>
+<% end %>
