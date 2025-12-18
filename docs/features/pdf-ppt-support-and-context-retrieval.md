@@ -1,5 +1,53 @@
 # PDF/PPT Support & Enhanced Context Retrieval for Writebook
 
+## Implementation Status
+
+**Completed: December 2024**
+
+### What Was Implemented
+
+1. **Document Model** (`app/models/document.rb`)
+   - New `Document` leafable type for storing PDF/PPTX/DOCX files
+   - Per-page text extraction stored in JSON fields
+   - Processing status tracking (pending, processing, completed, failed)
+   - Full integration with Writebook's book/leaf system
+
+2. **PDF Text Extraction** (`app/services/pdf_text_extractor.rb`)
+   - Text extraction using pdf-reader gem
+   - Page-by-page text storage for granular context
+   - Metadata extraction (title, author, etc.)
+
+3. **Background Processing** (`app/jobs/document_processing_job.rb`)
+   - Async document processing via SolidQueue
+   - Retry logic with polynomial backoff
+   - Error handling and status updates
+
+4. **PDF.js Viewer** (`app/javascript/controllers/pdf_viewer_controller.js`)
+   - In-browser PDF rendering via PDF.js
+   - Page navigation controls
+   - Responsive canvas scaling
+
+5. **Cross-Section Context Retrieval** (`app/services/context_retrieval_service.rb`)
+   - FTS5-based keyword search within same book
+   - Automatic key term extraction
+   - `Leaf::Contextable` concern for easy access
+
+6. **WritingAssistantAgent Integration**
+   - Automatic related content fetching
+   - Updated prompt templates with related sections
+   - Helps maintain consistency across book
+
+### Commits
+- `72057fb` Add Document model for PDF/PPT support
+- `787e92e` Add PDF and document text extraction services
+- `6a7ecc2` Add DocumentProcessingJob for async document processing
+- `938413e` Add Documents controller, views, and UI integration
+- `d7604da` Add ContextRetrievalService for cross-section search
+- `7248f08` Integrate cross-section context into WritingAssistantAgent
+- `af46d03` Add PDF.js viewer component for document display
+
+---
+
 ## Executive Summary
 
 This document outlines the implementation plan for adding PDF and PowerPoint support to Writebook, along with enhanced context retrieval capabilities using vector embeddings or improved search indexing. The goal is to allow users to import document formats and enable the AI assistant to intelligently reference content across sections of a book.
