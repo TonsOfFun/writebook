@@ -1,5 +1,5 @@
 class Leaf < ApplicationRecord
-  include Editable, Positionable, Searchable
+  include Editable, Positionable, Searchable, Contextable
 
   belongs_to :book, touch: true
   delegated_type :leafable, types: Leafable::TYPES, dependent: :destroy
