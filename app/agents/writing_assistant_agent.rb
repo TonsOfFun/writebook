@@ -61,6 +61,24 @@ class WritingAssistantAgent < ApplicationAgent
     @full_content = params[:full_content]
     @context = params[:context]
     @has_selection = @selection.present?
+
+    # Fetch related content from the same book for additional context
+    @related_content = fetch_related_content
+  end
+
+  def fetch_related_content
+    contextable = params[:contextable]
+    return nil unless contextable.respond_to?(:leaf)
+
+    leaf = contextable.leaf
+    return nil unless leaf
+
+    # Use the selection or content to find related sections
+    query_text = @selection.presence || @content
+    leaf.related_context(limit: 3, query: query_text)
+  rescue => e
+    Rails.logger.warn "[WritingAssistantAgent] Failed to fetch related content: #{e.message}"
+    nil
   end
 
   # Sets up context persistence and triggers prompt rendering
@@ -93,7 +111,8 @@ class WritingAssistantAgent < ApplicationAgent
       target_length: @target_length,
       areas_to_expand: @areas_to_expand,
       topic: @topic,
-      number_of_ideas: @number_of_ideas
+      number_of_ideas: @number_of_ideas,
+      related_content: @related_content
     }.compact
   end
 

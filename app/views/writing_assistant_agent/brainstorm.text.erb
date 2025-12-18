@@ -6,6 +6,14 @@ Topic: <%= @topic %>
 Context: <%= @context %>
 <% end %>
 
+<% if @related_content.present? %>
+## Related sections from this book (for inspiration and consistency):
+<% @related_content.each do |related| %>
+### <%= related[:title] %>
+<%= related[:content] %>
+
+<% end %>
+<% end %>
 <% if @full_content.present? %>
 ## Current document (for additional context):
 <%= @full_content %>
