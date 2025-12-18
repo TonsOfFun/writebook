@@ -1,0 +1,131 @@
+/* Document viewer styles */
+
+.page--document {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.document-viewer {
+  background: var(--color-paper);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.document-toolbar {
+  background: var(--color-fill);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.document-filename {
+  font-weight: 500;
+}
+
+.pdf-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 400px;
+  max-height: 80vh;
+  overflow: auto;
+  background: var(--color-fill-selected);
+  padding: 1rem;
+}
+
+.pdf-container canvas {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: white;
+}
+
+.pdf-navigation {
+  background: var(--color-fill);
+  border-top: 1px solid var(--color-border);
+}
+
+.pdf-navigation button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pdf-error {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.document-text-content {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-paper);
+}
+
+.document-text-content summary {
+  font-weight: 500;
+  user-select: none;
+}
+
+.document-text-content summary:hover {
+  background: var(--color-fill);
+}
+
+.document-processing,
+.document-error,
+.document-empty {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: var(--color-fill);
+  border-radius: var(--radius);
+}
+
+.document-upload-area {
+  min-height: 200px;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-fill);
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.document-upload-area:hover {
+  border-color: var(--color-accent);
+  background: var(--color-fill-selected);
+}
+
+.document-icon {
+  opacity: 0.5;
+}
+
+.document-status {
+  text-align: center;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.badge--warning {
+  background: var(--color-warning-bg, #fef3c7);
+  color: var(--color-warning, #92400e);
+}
+
+.badge--info {
+  background: var(--color-info-bg, #dbeafe);
+  color: var(--color-info, #1e40af);
+}
+
+.badge--success {
+  background: var(--color-success-bg, #dcfce7);
+  color: var(--color-success, #166534);
+}
+
+.badge--error {
+  background: var(--color-error-bg, #fee2e2);
+  color: var(--color-error, #991b1b);
+}
