@@ -48,12 +48,15 @@ class ContextRetrievalService
 
     search_query = build_fts_query(key_terms)
 
+    # Use with_search_results_for directly to avoid the extra SELECT columns
+    # that conflict with count operations
     book.leaves
         .active
         .where.not(id: leaf.id)
-        .search(search_query)
+        .with_search_results_for(search_query)
         .favoring_title
         .limit(limit)
+        .to_a
   end
 
   def extract_key_terms(text, max_terms: 10)
