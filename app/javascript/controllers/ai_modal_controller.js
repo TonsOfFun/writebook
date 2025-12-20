@@ -218,7 +218,7 @@ export default class extends Controller {
       // Update status to show what tool is being executed
       this.setStatus(message.tool_status.description, true)
     } else if (message.content) {
-      this.accumulatedContent += message.content
+      this.accumulatedContent = message.content
       // Render as markdown preview while streaming
       this.contentTarget.innerHTML = this.renderMarkdown(this.accumulatedContent)
 

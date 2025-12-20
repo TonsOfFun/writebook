@@ -265,7 +265,7 @@ class ResearchAssistantAgent < ApplicationAgent
     return unless params[:stream_id]
 
     Rails.logger.info "[ResearchAgent] Broadcasting chunk to stream_id: #{params[:stream_id]}"
-    ActionCable.server.broadcast(params[:stream_id], { content: chunk.delta })
+    ActionCable.server.broadcast(params[:stream_id], { content: chunk.message[:content] })
   end
 
   def broadcast_complete(chunk)
