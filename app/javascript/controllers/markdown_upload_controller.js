@@ -154,9 +154,9 @@ export default class extends Controller {
           console.log('[Caption Streaming] Message received:', message)
 
           if (message.content) {
-            // Append new caption chunk
-            accumulatedCaption += message.content
-            console.log('[Caption Streaming] Accumulated caption:', accumulatedCaption)
+            // Set caption from full content (not delta)
+            accumulatedCaption = message.content
+            console.log('[Caption Streaming] Caption content:', accumulatedCaption)
 
             // Update the caption in the editor
             this.updateCaption(imageUrl, accumulatedCaption)
@@ -181,29 +181,26 @@ export default class extends Controller {
 
     // Find the image markdown and update the caption below it
     const currentContent = houseMd.value || ''
-    const imageMarkdown = currentContent.split('\n').find(line => line.includes(imageUrl))
+    const escapedUrl = imageUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-    if (imageMarkdown) {
-      // Build the pattern to find and replace the caption
-      // Pattern: image line followed by caption line
-      const escapedUrl = imageUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      const pattern = new RegExp(
-        `(!\\[.*?\\]\\(${escapedUrl}\\))\\n\\*.*?\\*`,
-        'g'
-      )
+    // Pattern: image line followed by caption line (italic text starting with *)
+    // Use [^\n]* to match any characters except newline on the caption line
+    const pattern = new RegExp(
+      `(!\\[.*?\\]\\(${escapedUrl}\\))\\n\\*[^\\n]*\\*`,
+      'g'
+    )
 
-      // Replace with image and new caption
-      const newContent = currentContent.replace(
-        pattern,
-        `$1\n*${caption}*`
-      )
+    // Replace with image and new caption
+    const newContent = currentContent.replace(
+      pattern,
+      `$1\n*${caption}*`
+    )
 
-      // Update the editor
-      houseMd.value = newContent
+    // Update the editor
+    houseMd.value = newContent
 
-      // Trigger input event to update preview
-      houseMd.dispatchEvent(new Event('input', { bubbles: true }))
-    }
+    // Trigger input event to update preview
+    houseMd.dispatchEvent(new Event('input', { bubbles: true }))
   }
 
   showUploadingState() {
