@@ -7,12 +7,25 @@ class ActionText::Markdown::UploadsController < ApplicationController
 
   def create
     @record = GlobalID::Locator.locate_signed params[:record_gid]
+    Rails.logger.info "[Upload] params[:file] class: #{params[:file].class}"
 
     @markdown = @record.safe_markdown_attribute params[:attribute_name]
-    @markdown.uploads.attach params[:file]
-    @markdown.save!
+    Rails.logger.info "[Upload] @markdown.id: #{@markdown.id}, persisted: #{@markdown.persisted?}"
 
-    @upload = @markdown.uploads.attachments.last
+    # Create blob and attachment directly to avoid issues with pre-loaded associations
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: params[:file],
+      filename: params[:file].original_filename,
+      content_type: params[:file].content_type
+    )
+
+    # Create attachment directly instead of using attach (which has issues with pre-loaded associations)
+    @upload = ActiveStorage::Attachment.create!(
+      name: "uploads",
+      record: @markdown,
+      blob: blob
+    )
+    @markdown.save!
 
     # Optionally generate caption for images using AI with streaming
     if should_generate_caption?(@upload)
@@ -35,25 +48,20 @@ class ActionText::Markdown::UploadsController < ApplicationController
   private
 
   def should_generate_caption?(upload)
+    Rails.logger.info "[Image Caption] Checking image type..."
     # Only generate captions for images, and could be feature-flagged
     upload.content_type&.start_with?('image/') &&
       defined?(FileAnalyzerAgent) # Check if the agent exists
   end
 
   def generate_image_caption_stream(upload, stream_id)
-    # Use Rails' temp file handling in a background thread
-    Thread.new do
-      upload.blob.open do |temp_file|
-        FileAnalyzerAgent.with(
-          file_path: temp_file.path,
-          description_detail: "brief",
-          stream_id: stream_id
-        ).analyze_image.generate_later
-      end
-    rescue => e
-      Rails.logger.error "[Image Caption] Failed to generate caption: #{e.message}"
-      # Broadcast error to the client
-      ActionCable.server.broadcast(stream_id, { error: e.message })
-    end
+    FileAnalyzerAgent.with(
+      attachment_slug: upload.slug,
+      description_detail: "full",
+      stream_id: stream_id
+    ).analyze_image.generate_later
+  rescue => e
+    Rails.logger.error "[Image Caption] Failed to generate caption: #{e.message}"
+    ActionCable.server.broadcast(stream_id, { error: e.message })
   end
 end
