@@ -31,6 +31,10 @@ export default class extends Controller {
     this.handleGlobalAiAction = this.handleGlobalAiAction.bind(this)
     document.addEventListener('ai-modal:perform', this.handleGlobalAiAction)
 
+    // Listen for image text extraction events
+    this.handleExtractImageText = this.handleExtractImageText.bind(this)
+    document.addEventListener('ai-modal:extract-image-text', this.handleExtractImageText)
+
     // Track content changes when user edits
     this.handleContentInput = this.handleContentInput.bind(this)
     this.contentTarget.addEventListener('input', this.handleContentInput)
@@ -38,8 +42,18 @@ export default class extends Controller {
 
   disconnect() {
     document.removeEventListener('ai-modal:perform', this.handleGlobalAiAction)
+    document.removeEventListener('ai-modal:extract-image-text', this.handleExtractImageText)
     this.contentTarget.removeEventListener('input', this.handleContentInput)
     this.cleanup()
+  }
+
+  /**
+   * Handle image text extraction event
+   */
+  handleExtractImageText(event) {
+    const { attachmentSlug } = event.detail
+    console.log('[AI Modal] Extract image text event received for:', attachmentSlug)
+    this.extractImageText(attachmentSlug)
   }
 
   /**
@@ -129,6 +143,57 @@ export default class extends Controller {
     this.actionValue = 'caption'
     this.openModal('caption', fileName)
     this.subscribeToStream(streamId)
+  }
+
+  /**
+   * Extract text from an image attachment
+   * Opens modal and streams extracted text content
+   */
+  async extractImageText(attachmentSlug) {
+    console.log('[AI Modal] Extract image text for attachment:', attachmentSlug)
+
+    this.actionValue = 'extract_image_text'
+    this.storedSelection = null
+    this.storedFullContent = null
+
+    this.openModal('extract_image_text', 'image')
+    await this.startImageExtraction(attachmentSlug)
+  }
+
+  /**
+   * Start streaming for image text extraction
+   */
+  async startImageExtraction(attachmentSlug) {
+    try {
+      const requestBody = {
+        action_type: 'extract_image_text',
+        attachment_slug: attachmentSlug
+      }
+
+      const response = await fetch('/assistants/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        },
+        body: JSON.stringify(requestBody)
+      })
+
+      const data = await response.json()
+
+      if (data.error) {
+        this.showError(data.error)
+        return
+      }
+
+      // Small delay to ensure subscription is ready
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      this.subscribeToStream(data.stream_id)
+    } catch (error) {
+      console.error('[AI Modal] Image extraction request error:', error)
+      this.showError('Failed to start image text extraction')
+    }
   }
 
   openModal(actionType, context = '') {
@@ -329,7 +394,8 @@ export default class extends Controller {
       style: 'Adjusting style...',
       brainstorm: 'Brainstorming...',
       caption: 'Generating caption...',
-      research: 'Researching topic...'
+      research: 'Researching topic...',
+      extract_image_text: 'Extracting text from image...'
     }
     return labels[actionType] || 'Processing...'
   }

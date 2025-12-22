@@ -240,6 +240,18 @@ class AssistantsController < ApplicationController
         stream_id: stream_id
       )
       research_agent.research.generate_later
+    when 'extract_image_text'
+      # Image text extraction uses FileAnalyzerAgent with attachment slug
+      unless params[:attachment_slug].present?
+        return render json: { error: "attachment_slug is required for image text extraction" }, status: :unprocessable_entity
+      end
+
+      file_agent = FileAnalyzerAgent.with(
+        attachment_slug: params[:attachment_slug],
+        extraction_focus: params[:extraction_focus] || "all",
+        stream_id: stream_id
+      )
+      file_agent.extract_image_text.generate_later
     else
       return render json: { error: "Unknown action: #{action}" }, status: :unprocessable_entity
     end

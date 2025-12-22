@@ -32,6 +32,19 @@ class FileAnalyzerAgent < ApplicationAgent
     setup_context_and_prompt_with_image
   end
 
+  # Extract all text content from an image (OCR-style extraction)
+  # Used for detailed text extraction that streams to modal
+  def extract_image_text
+    Rails.logger.info "[FileAnalyzer] extract_image_text called with params: #{params.inspect}"
+
+    @extraction_focus = params[:extraction_focus] || "all"
+
+    # Encode image before calling prompt
+    encode_image_from_attachment
+
+    setup_context_and_prompt_with_image
+  end
+
   def extract_text
     @file_path = params[:file_path] if params[:file_path]
     @content = extract_file_content(@file_path) if @file_path

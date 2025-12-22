@@ -1,0 +1,15 @@
+Please extract and transcribe ALL text content visible in this image.
+
+<% if @extraction_focus.present? && @extraction_focus != "all" %>
+Focus area: <%= @extraction_focus %>
+<% end %>
+
+Instructions:
+- Extract every piece of text you can see in the image
+- Preserve the original formatting and structure as much as possible
+- Include headings, paragraphs, lists, labels, captions, and any other text
+- If text appears in columns or sections, maintain that organization
+- Note any text that is partially visible or unclear with [unclear] markers
+- Include numbers, dates, and any other alphanumeric content
+
+Format the extracted text in a clean, readable markdown format that preserves the document structure.

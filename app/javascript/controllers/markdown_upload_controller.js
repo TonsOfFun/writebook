@@ -9,6 +9,7 @@ export default class extends Controller {
     // Only setup once, check if already initialized
     if (!this.element.dataset.uploadInitialized) {
       this.setupFileUpload()
+      this.setupExtractLinkHandler()
       this.element.dataset.uploadInitialized = 'true'
     }
 
@@ -16,6 +17,38 @@ export default class extends Controller {
     this.cable = window.App || (window.App = {})
     if (!this.cable.cable) {
       this.cable.cable = createConsumer()
+    }
+  }
+
+  /**
+   * Setup click handler for extract text links in the preview
+   */
+  setupExtractLinkHandler() {
+    // Listen for clicks on the document and intercept extract: links
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href^="extract:"]')
+      if (link) {
+        e.preventDefault()
+        const attachmentSlug = link.href.replace('extract:', '')
+        console.log('[Extract] Clicked extract link for attachment:', attachmentSlug)
+        this.triggerImageTextExtraction(attachmentSlug, link)
+      }
+    })
+  }
+
+  /**
+   * Trigger image text extraction via the AI modal
+   */
+  triggerImageTextExtraction(attachmentSlug, linkElement) {
+    // Find the AI modal controller and call extractImageText
+    const aiModal = document.querySelector('[data-controller~="ai-modal"]')
+    if (aiModal && aiModal.__aiModalController) {
+      aiModal.__aiModalController.extractImageText(attachmentSlug)
+    } else {
+      // Dispatch a custom event that the AI modal can listen for
+      document.dispatchEvent(new CustomEvent('ai-modal:extract-image-text', {
+        detail: { attachmentSlug }
+      }))
     }
   }
 
@@ -117,8 +150,8 @@ export default class extends Controller {
     let captionMarkdown = ''
     if (uploadResult.streamId) {
       captionMarkdown = '\n*Generating caption...*'
-      // Start streaming caption
-      this.streamCaption(uploadResult.streamId, uploadResult.fileUrl)
+      // Start streaming caption with attachment slug for later text extraction
+      this.streamCaption(uploadResult.streamId, uploadResult.fileUrl, uploadResult.attachmentSlug)
     }
 
     // Insert at cursor position or at the end
@@ -132,11 +165,11 @@ export default class extends Controller {
     houseMd.dispatchEvent(new Event('change', { bubbles: true }))
   }
 
-  streamCaption(streamId, imageUrl) {
+  streamCaption(streamId, imageUrl, attachmentSlug = null) {
     const houseMd = document.querySelector('house-md')
     if (!houseMd) return
 
-    console.log('[Caption Streaming] Starting for stream_id:', streamId)
+    console.log('[Caption Streaming] Starting for stream_id:', streamId, 'attachment:', attachmentSlug)
 
     let accumulatedCaption = ''
 
@@ -162,8 +195,8 @@ export default class extends Controller {
             this.updateCaption(imageUrl, accumulatedCaption)
           } else if (message.done) {
             console.log('[Caption Streaming] Streaming complete. Final caption:', accumulatedCaption)
-            // Streaming complete - final update
-            this.updateCaption(imageUrl, accumulatedCaption)
+            // Streaming complete - final update with extract link
+            this.updateCaption(imageUrl, accumulatedCaption, attachmentSlug)
             subscription.unsubscribe()
           } else if (message.error) {
             console.error('[Caption Streaming] Error:', message.error)
@@ -175,13 +208,16 @@ export default class extends Controller {
     )
   }
 
-  updateCaption(imageUrl, caption) {
+  updateCaption(imageUrl, caption, attachmentSlug = null) {
     const houseMd = document.querySelector('house-md')
     if (!houseMd) return
 
     // Find the image markdown and update the caption below it
     const currentContent = houseMd.value || ''
     const escapedUrl = imageUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+    // Clean caption: replace newlines with spaces for single-line italic markdown
+    const cleanCaption = caption.replace(/\n+/g, ' ').trim()
 
     // Pattern: image line followed by caption line (italic text starting with *)
     // Use [^\n]* to match any characters except newline on the caption line
@@ -190,11 +226,16 @@ export default class extends Controller {
       'g'
     )
 
+    // Build the replacement: image + caption + optional extract link
+    let replacement = `$1\n*${cleanCaption}*`
+
+    // Add extract text link when streaming is complete (attachmentSlug provided)
+    if (attachmentSlug) {
+      replacement += `\n[📄 Extract full text](extract:${attachmentSlug})`
+    }
+
     // Replace with image and new caption
-    const newContent = currentContent.replace(
-      pattern,
-      `$1\n*${caption}*`
-    )
+    const newContent = currentContent.replace(pattern, replacement)
 
     // Update the editor
     houseMd.value = newContent
