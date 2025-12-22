@@ -261,7 +261,7 @@ class ResearchAssistantAgent < ApplicationAgent
   end
 
   def broadcast_chunk(chunk)
-    return unless chunk.delta
+    return unless chunk.message
     return unless params[:stream_id]
 
     Rails.logger.info "[ResearchAgent] Broadcasting chunk to stream_id: #{params[:stream_id]}"
