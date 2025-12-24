@@ -6,9 +6,6 @@ class ResearchAssistantAgent < ApplicationAgent
     model: "gpt-4o",
     stream: true
 
-  include HasTools
-  include StreamsToolUpdates
-
   class_attribute :browser_session, default: nil
 
   # Enable context persistence for tracking research sessions

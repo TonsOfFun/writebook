@@ -1,9 +1,10 @@
 class ApplicationAgent < ActiveAgent::Base
-  include SolidAgent
+  include SolidAgent::HasContext
+  include SolidAgent::HasTools
+  include SolidAgent::StreamsToolUpdates
 
   layout "agent"
 
-  # generate_with :ollama, model: "gpt-oss:20b"
   generate_with :openai, model: "gpt-4o"
 
   # Handle exceptions during streaming to prevent crashes
@@ -18,4 +19,3 @@ class ApplicationAgent < ActiveAgent::Base
     Rails.logger.error exception.backtrace&.join("\n") if exception.backtrace
   end
 end
-

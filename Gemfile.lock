@@ -110,7 +110,7 @@ GEM
     Ascii85 (2.0.1)
     action_text-trix (2.1.15)
       railties
-    activeagent (1.0.0)
+    activeagent (1.0.1)
       actionpack (>= 7.2, <= 9.0)
       actionview (>= 7.2, <= 9.0)
       activejob (>= 7.2, <= 9.0)
@@ -375,6 +375,10 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
+    solid_agent (0.1.1)
+      activeagent (>= 1.0.0)
+      activerecord (>= 7.0)
+      activesupport (>= 7.0)
     solid_queue (1.2.4)
       activejob (>= 7.1)
       activerecord (>= 7.1)
@@ -440,7 +444,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  activeagent (~> 1.0.0)
+  activeagent (~> 1.0.1)
   bcrypt (~> 3.1.7)
   brakeman
   capybara
@@ -465,6 +469,7 @@ DEPENDENCIES
   rubocop-rails-omakase
   ruby-anthropic
   selenium-webdriver
+  solid_agent (~> 0.1.1)
   solid_queue
   sqlite3 (~> 2.2)
   stimulus-rails

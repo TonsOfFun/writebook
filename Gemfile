@@ -50,7 +50,8 @@ end
 gem "reactionview", "~> 0.1.2"
 
 # AI Integration
-gem 'activeagent', '~> 1.0.0'
+gem "activeagent", "~> 1.0.1"
+gem "solid_agent", "~> 0.1.1"
 gem "openai"
 gem "ruby-anthropic"  # For Anthropic/Claude support
 gem "pdf-reader"  # For PDF analysis
