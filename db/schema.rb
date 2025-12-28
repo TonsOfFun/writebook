@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2025_12_18_183654) do
+ActiveRecord::Schema[8.2].define(version: 2025_12_28_123555) do
   create_table "accesses", force: :cascade do |t|
     t.integer "book_id", null: false
     t.datetime "created_at", null: false
@@ -123,6 +123,27 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_18_183654) do
     t.index ["agent_context_id"], name: "index_agent_messages_on_agent_context_id"
   end
 
+  create_table "agent_tool_calls", force: :cascade do |t|
+    t.integer "agent_context_id", null: false
+    t.json "arguments", default: {}
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.integer "duration_ms"
+    t.text "error_message"
+    t.string "name", null: false
+    t.integer "position", default: 0
+    t.json "result"
+    t.datetime "started_at"
+    t.string "status", default: "pending"
+    t.string "tool_call_id"
+    t.datetime "updated_at", null: false
+    t.index ["agent_context_id", "position"], name: "index_agent_tool_calls_on_agent_context_id_and_position"
+    t.index ["agent_context_id"], name: "index_agent_tool_calls_on_agent_context_id"
+    t.index ["name"], name: "index_agent_tool_calls_on_name"
+    t.index ["status"], name: "index_agent_tool_calls_on_status"
+    t.index ["tool_call_id"], name: "index_agent_tool_calls_on_tool_call_id"
+  end
+
   create_table "books", force: :cascade do |t|
     t.string "author"
     t.datetime "created_at", null: false
@@ -222,6 +243,7 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_18_183654) do
   add_foreign_key "agent_generations", "agent_contexts"
   add_foreign_key "agent_generations", "agent_messages", column: "response_message_id"
   add_foreign_key "agent_messages", "agent_contexts"
+  add_foreign_key "agent_tool_calls", "agent_contexts"
   add_foreign_key "edits", "leaves"
   add_foreign_key "leaves", "books"
   add_foreign_key "sessions", "users"

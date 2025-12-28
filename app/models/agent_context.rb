@@ -32,6 +32,12 @@ class AgentContext < ApplicationRecord
            class_name: "AgentGeneration",
            dependent: :destroy
 
+  # Tool call records - captures individual tool executions
+  has_many :tool_calls,
+           -> { order(position: :asc) },
+           class_name: "AgentToolCall",
+           dependent: :destroy
+
   # Validations
   validates :agent_name, presence: true
   validates :status, inclusion: { in: %w[pending processing completed failed] }
@@ -123,6 +129,79 @@ class AgentContext < ApplicationRecord
       )
       update!(status: "failed")
     end
+  end
+
+  # === Tool Call Methods ===
+
+  # Records the start of a tool call
+  #
+  # @param name [String, Symbol] the tool name
+  # @param arguments [Hash] the arguments passed to the tool
+  # @param tool_call_id [String, nil] the LLM's tool call ID
+  # @return [AgentToolCall] the created tool call record
+  def record_tool_call_start(name:, arguments: {}, tool_call_id: nil)
+    tool_calls.create!(
+      name: name.to_s,
+      arguments: arguments,
+      tool_call_id: tool_call_id,
+      status: "executing",
+      started_at: Time.current
+    )
+  end
+
+  # Records the completion of a tool call
+  #
+  # @param tool_call [AgentToolCall] the tool call record
+  # @param result [Hash, Object] the result from the tool
+  # @return [AgentToolCall] the updated tool call record
+  def record_tool_call_complete(tool_call, result:)
+    tool_call.complete!(result)
+  end
+
+  # Records a failed tool call
+  #
+  # @param tool_call [AgentToolCall] the tool call record
+  # @param error [String, Exception] the error that occurred
+  # @return [AgentToolCall] the updated tool call record
+  def record_tool_call_failure(tool_call, error:)
+    tool_call.fail!(error)
+  end
+
+  # Returns all tool calls for a specific tool
+  #
+  # @param name [String, Symbol] the tool name
+  # @return [ActiveRecord::Relation<AgentToolCall>]
+  def tool_calls_for(name)
+    tool_calls.for_tool(name)
+  end
+
+  # Returns the results of all completed tool calls
+  #
+  # @return [Array<Hash>] array of tool results with metadata
+  def tool_call_results
+    tool_calls.completed.map do |tc|
+      {
+        name: tc.name,
+        arguments: tc.parsed_arguments,
+        result: tc.parsed_result,
+        duration_ms: tc.duration_ms
+      }
+    end
+  end
+
+  # Returns the results of all completed tool calls for a specific tool
+  #
+  # @param name [String, Symbol] the tool name
+  # @return [Array<Hash>] array of tool results
+  def tool_results_for(name)
+    tool_calls_for(name).completed.map(&:parsed_result)
+  end
+
+  # Returns statistics about tool calls in this context
+  #
+  # @return [Hash] tool call statistics
+  def tool_call_statistics
+    tool_calls.statistics
   end
 
   private

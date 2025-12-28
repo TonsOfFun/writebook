@@ -196,3 +196,261 @@ class AgentGenerationTest < ActiveSupport::TestCase
     assert generation.failed?
   end
 end
+
+class AgentToolCallTest < ActiveSupport::TestCase
+  setup do
+    @context = AgentContext.create!(agent_name: "TestAgent")
+  end
+
+  test "creates tool call with required attributes" do
+    tool_call = AgentToolCall.create!(
+      agent_context: @context,
+      name: "navigate",
+      arguments: { url: "https://example.com" },
+      status: "pending"
+    )
+
+    assert tool_call.persisted?
+    assert_equal "navigate", tool_call.name
+    assert_equal({ "url" => "https://example.com" }, tool_call.arguments)
+    assert_equal "pending", tool_call.status
+  end
+
+  test "start! marks tool call as executing" do
+    tool_call = AgentToolCall.create!(
+      agent_context: @context,
+      name: "navigate",
+      status: "pending"
+    )
+
+    tool_call.start!
+
+    assert_equal "executing", tool_call.status
+    assert_not_nil tool_call.started_at
+  end
+
+  test "complete! marks tool call as completed with result" do
+    tool_call = AgentToolCall.create!(
+      agent_context: @context,
+      name: "navigate",
+      status: "executing",
+      started_at: 1.second.ago
+    )
+
+    result = { success: true, current_url: "https://example.com" }
+    tool_call.complete!(result)
+
+    assert_equal "completed", tool_call.status
+    assert_equal result.stringify_keys, tool_call.result
+    assert_not_nil tool_call.completed_at
+    assert_not_nil tool_call.duration_ms
+  end
+
+  test "fail! marks tool call as failed with error" do
+    tool_call = AgentToolCall.create!(
+      agent_context: @context,
+      name: "navigate",
+      status: "executing",
+      started_at: 1.second.ago
+    )
+
+    tool_call.fail!("Connection timeout")
+
+    assert_equal "failed", tool_call.status
+    assert_equal "Connection timeout", tool_call.error_message
+    assert_not_nil tool_call.completed_at
+  end
+
+  test "fail! accepts exception objects" do
+    tool_call = AgentToolCall.create!(
+      agent_context: @context,
+      name: "navigate",
+      status: "executing",
+      started_at: 1.second.ago
+    )
+
+    tool_call.fail!(StandardError.new("Something went wrong"))
+
+    assert_equal "failed", tool_call.status
+    assert_equal "Something went wrong", tool_call.error_message
+  end
+
+  test "success? returns true for completed without error" do
+    tool_call = AgentToolCall.create!(
+      agent_context: @context,
+      name: "navigate",
+      status: "completed"
+    )
+
+    assert tool_call.success?
+  end
+
+  test "failed? returns true for failed status" do
+    tool_call = AgentToolCall.create!(
+      agent_context: @context,
+      name: "navigate",
+      status: "failed",
+      error_message: "Error"
+    )
+
+    assert tool_call.failed?
+  end
+
+  test "in_progress? returns true for pending or executing" do
+    pending_call = AgentToolCall.create!(agent_context: @context, name: "test", status: "pending")
+    executing_call = AgentToolCall.create!(agent_context: @context, name: "test", status: "executing")
+
+    assert pending_call.in_progress?
+    assert executing_call.in_progress?
+  end
+
+  test "parsed_result returns symbolized keys" do
+    tool_call = AgentToolCall.create!(
+      agent_context: @context,
+      name: "navigate",
+      status: "completed",
+      result: { "success" => true, "current_url" => "https://example.com" }
+    )
+
+    parsed = tool_call.parsed_result
+    assert_equal({ success: true, current_url: "https://example.com" }, parsed)
+  end
+
+  test "parsed_arguments returns symbolized keys" do
+    tool_call = AgentToolCall.create!(
+      agent_context: @context,
+      name: "navigate",
+      arguments: { "url" => "https://example.com" }
+    )
+
+    parsed = tool_call.parsed_arguments
+    assert_equal({ url: "https://example.com" }, parsed)
+  end
+
+  test "for_tool scope filters by tool name" do
+    AgentToolCall.create!(agent_context: @context, name: "navigate")
+    AgentToolCall.create!(agent_context: @context, name: "click")
+    AgentToolCall.create!(agent_context: @context, name: "navigate")
+
+    navigate_calls = @context.tool_calls.for_tool(:navigate)
+    assert_equal 2, navigate_calls.count
+  end
+
+  test "statistics returns summary of tool calls" do
+    AgentToolCall.create!(agent_context: @context, name: "navigate", status: "completed", duration_ms: 100)
+    AgentToolCall.create!(agent_context: @context, name: "navigate", status: "completed", duration_ms: 150)
+    AgentToolCall.create!(agent_context: @context, name: "click", status: "failed")
+
+    stats = @context.tool_calls.statistics
+
+    assert_equal 3, stats[:total]
+    assert_equal 2, stats[:completed]
+    assert_equal 1, stats[:failed]
+    assert_equal 250, stats[:total_duration_ms]
+    assert_equal({ "navigate" => 2, "click" => 1 }, stats[:by_tool])
+  end
+
+  test "position is auto-assigned" do
+    call1 = AgentToolCall.create!(agent_context: @context, name: "navigate")
+    call2 = AgentToolCall.create!(agent_context: @context, name: "click")
+    call3 = AgentToolCall.create!(agent_context: @context, name: "extract_text")
+
+    assert_equal 0, call1.position
+    assert_equal 1, call2.position
+    assert_equal 2, call3.position
+  end
+end
+
+class AgentContextToolCallsTest < ActiveSupport::TestCase
+  setup do
+    @context = AgentContext.create!(agent_name: "TestAgent")
+  end
+
+  test "record_tool_call_start creates a tool call record" do
+    tool_call = @context.record_tool_call_start(
+      name: :navigate,
+      arguments: { url: "https://example.com" },
+      tool_call_id: "call_abc123"
+    )
+
+    assert tool_call.persisted?
+    assert_equal "navigate", tool_call.name
+    assert_equal({ "url" => "https://example.com" }, tool_call.arguments)
+    assert_equal "call_abc123", tool_call.tool_call_id
+    assert_equal "executing", tool_call.status
+    assert_not_nil tool_call.started_at
+  end
+
+  test "record_tool_call_complete updates the tool call" do
+    tool_call = @context.record_tool_call_start(name: :navigate, arguments: {})
+    result = { success: true }
+
+    @context.record_tool_call_complete(tool_call, result: result)
+
+    tool_call.reload
+    assert_equal "completed", tool_call.status
+    assert_equal result.stringify_keys, tool_call.result
+  end
+
+  test "record_tool_call_failure updates the tool call with error" do
+    tool_call = @context.record_tool_call_start(name: :navigate, arguments: {})
+
+    @context.record_tool_call_failure(tool_call, error: "Connection failed")
+
+    tool_call.reload
+    assert_equal "failed", tool_call.status
+    assert_equal "Connection failed", tool_call.error_message
+  end
+
+  test "tool_calls_for returns calls for specific tool" do
+    @context.record_tool_call_start(name: :navigate, arguments: {})
+    @context.record_tool_call_start(name: :click, arguments: {})
+    @context.record_tool_call_start(name: :navigate, arguments: {})
+
+    navigate_calls = @context.tool_calls_for(:navigate)
+    assert_equal 2, navigate_calls.count
+  end
+
+  test "tool_call_results returns completed results with metadata" do
+    tc1 = @context.record_tool_call_start(name: :navigate, arguments: { url: "https://example.com" })
+    @context.record_tool_call_complete(tc1, result: { success: true, title: "Example" })
+
+    tc2 = @context.record_tool_call_start(name: :extract_text, arguments: { selector: "body" })
+    @context.record_tool_call_complete(tc2, result: { success: true, text: "Hello World" })
+
+    results = @context.tool_call_results
+
+    assert_equal 2, results.length
+    assert_equal "navigate", results[0][:name]
+    assert_equal({ url: "https://example.com" }, results[0][:arguments])
+    assert_equal({ success: true, title: "Example" }, results[0][:result])
+  end
+
+  test "tool_results_for returns results for specific tool" do
+    tc1 = @context.record_tool_call_start(name: :navigate, arguments: {})
+    @context.record_tool_call_complete(tc1, result: { url: "https://a.com" })
+
+    tc2 = @context.record_tool_call_start(name: :navigate, arguments: {})
+    @context.record_tool_call_complete(tc2, result: { url: "https://b.com" })
+
+    results = @context.tool_results_for(:navigate)
+
+    assert_equal 2, results.length
+    assert_equal({ url: "https://a.com" }, results[0])
+    assert_equal({ url: "https://b.com" }, results[1])
+  end
+
+  test "tool_call_statistics returns summary" do
+    tc1 = @context.record_tool_call_start(name: :navigate, arguments: {})
+    @context.record_tool_call_complete(tc1, result: {})
+
+    tc2 = @context.record_tool_call_start(name: :click, arguments: {})
+    @context.record_tool_call_failure(tc2, error: "Element not found")
+
+    stats = @context.tool_call_statistics
+
+    assert_equal 2, stats[:total]
+    assert_equal 1, stats[:completed]
+    assert_equal 1, stats[:failed]
+  end
+end

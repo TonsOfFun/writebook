@@ -2,6 +2,7 @@ class ApplicationAgent < ActiveAgent::Base
   include SolidAgent::HasContext
   include SolidAgent::HasTools
   include SolidAgent::StreamsToolUpdates
+  include RecordsToolCalls
 
   layout "agent"
 
