@@ -39,6 +39,11 @@ module SolidAgent
       has_many :agent_messages,
                through: :agent_contexts,
                source: :messages
+
+      # All agent references through contexts (for citations/sources)
+      has_many :agent_references,
+               through: :agent_contexts,
+               source: :references
     end
 
     # Returns the most recent agent context for this record
@@ -67,6 +72,25 @@ module SolidAgent
         total_output_tokens: agent_generations.sum(:output_tokens),
         total_tokens: agent_generations.sum(:total_tokens)
       }
+    end
+
+    # Returns all research references for this record
+    # Includes references from all research agent contexts
+    def research_references
+      agent_references
+        .joins(:agent_context)
+        .where(agent_contexts: { agent_name: "ResearchAssistantAgent" })
+        .order(created_at: :desc)
+    end
+
+    # Returns reference cards for UI display
+    def research_reference_cards
+      research_references.with_metadata.map(&:as_card)
+    end
+
+    # Returns true if this record has any research references
+    def has_research_references?
+      research_references.exists?
     end
   end
 end

@@ -454,3 +454,145 @@ class AgentContextToolCallsTest < ActiveSupport::TestCase
     assert_equal 1, stats[:failed]
   end
 end
+
+class AgentReferenceTest < ActiveSupport::TestCase
+  setup do
+    @context = AgentContext.create!(agent_name: "ResearchAssistantAgent")
+  end
+
+  test "creates reference with required attributes" do
+    ref = AgentReference.create!(
+      agent_context: @context,
+      url: "https://example.com/article",
+      title: "Example Article"
+    )
+
+    assert ref.persisted?
+    assert_equal "https://example.com/article", ref.url
+    assert_equal "Example Article", ref.title
+    assert_equal "example.com", ref.domain
+    assert_equal "pending", ref.status
+  end
+
+  test "extracts domain from URL" do
+    ref = AgentReference.create!(
+      agent_context: @context,
+      url: "https://docs.ruby-lang.org/en/3.2/String.html"
+    )
+
+    assert_equal "docs.ruby-lang.org", ref.domain
+  end
+
+  test "display_title returns og_title first" do
+    ref = AgentReference.create!(
+      agent_context: @context,
+      url: "https://example.com",
+      title: "Page Title",
+      og_title: "OG Title"
+    )
+
+    assert_equal "OG Title", ref.display_title
+  end
+
+  test "display_title falls back to title" do
+    ref = AgentReference.create!(
+      agent_context: @context,
+      url: "https://example.com",
+      title: "Page Title"
+    )
+
+    assert_equal "Page Title", ref.display_title
+  end
+
+  test "display_title falls back to domain" do
+    ref = AgentReference.create!(
+      agent_context: @context,
+      url: "https://example.com"
+    )
+
+    assert_equal "example.com", ref.display_title
+  end
+
+  test "to_markdown_link returns formatted link" do
+    ref = AgentReference.create!(
+      agent_context: @context,
+      url: "https://example.com/article",
+      title: "Example Article"
+    )
+
+    assert_equal "[Example Article](https://example.com/article)", ref.to_markdown_link
+  end
+
+  test "as_card returns hash for API" do
+    ref = AgentReference.create!(
+      agent_context: @context,
+      url: "https://example.com/article",
+      title: "Example Article",
+      og_description: "This is a description",
+      status: "complete"
+    )
+
+    card = ref.as_card
+
+    assert_equal ref.id, card[:id]
+    assert_equal "https://example.com/article", card[:url]
+    assert_equal "example.com", card[:domain]
+    assert_equal "Example Article", card[:title]
+    assert_equal "This is a description", card[:description]
+    assert_equal "[Example Article](https://example.com/article)", card[:markdown_link]
+  end
+
+  test "position is auto-assigned" do
+    ref1 = AgentReference.create!(agent_context: @context, url: "https://a.com")
+    ref2 = AgentReference.create!(agent_context: @context, url: "https://b.com")
+    ref3 = AgentReference.create!(agent_context: @context, url: "https://c.com")
+
+    assert_equal 0, ref1.position
+    assert_equal 1, ref2.position
+    assert_equal 2, ref3.position
+  end
+
+  test "with_metadata scope filters references" do
+    AgentReference.create!(agent_context: @context, url: "https://a.com", title: "Has Title")
+    AgentReference.create!(agent_context: @context, url: "https://b.com", og_title: "Has OG Title")
+    AgentReference.create!(agent_context: @context, url: "https://c.com")  # No metadata
+
+    refs = @context.references.with_metadata
+    assert_equal 2, refs.count
+  end
+end
+
+class AgentContextReferencesTest < ActiveSupport::TestCase
+  setup do
+    @context = AgentContext.create!(agent_name: "ResearchAssistantAgent")
+  end
+
+  test "extract_references! creates references from navigate tool calls" do
+    # Create a completed navigate tool call
+    tc = @context.tool_calls.create!(
+      name: "navigate",
+      arguments: { url: "https://example.com" },
+      status: "completed",
+      result: { success: true, current_url: "https://example.com", title: "Example" }
+    )
+
+    refs = @context.extract_references!
+
+    assert_equal 1, @context.references.count
+    ref = @context.references.first
+    assert_equal "https://example.com", ref.url
+    assert_equal "Example", ref.title
+  end
+
+  test "reference_cards returns formatted cards" do
+    @context.references.create!(
+      url: "https://example.com",
+      title: "Example",
+      status: "complete"
+    )
+
+    cards = @context.reference_cards
+    assert_equal 1, cards.length
+    assert_equal "https://example.com", cards.first[:url]
+  end
+end

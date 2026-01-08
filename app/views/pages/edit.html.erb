@@ -18,6 +18,20 @@
 
     <%= render "leaves/history", leaf: @leaf %>
 
+    <%# References toggle button %>
+    <button type="button"
+            class="btn flex references-toggle txt-small"
+            onclick="document.dispatchEvent(new CustomEvent('references-panel:toggle'))"
+            title="Research Sources">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+      </svg>
+      <% if @page.has_research_references? %>
+        <span class="references-toggle__badge"><%= @page.research_references.count %></span>
+      <% end %>
+      <span class="for-screen-reader">Research Sources</span>
+    </button>
+
     <button type="submit" form="leafable-editor" class="btn flex page-toolbar__save flex-item-justify-end flex-item-no-shrink txt-small">
       <%= image_tag "check.svg", aria: { hidden: true }, size: 24 %>
       <span class="for-screen-reader">Save</span>
@@ -36,3 +50,6 @@
 </article>
 
 <%= render "leaves/edit_footer", leaf: @leaf %>
+
+<%# References panel for research sources %>
+<%= render "references/panel", leaf: @leaf, book: @book %>

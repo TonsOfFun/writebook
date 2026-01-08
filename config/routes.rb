@@ -37,6 +37,11 @@ Rails.application.routes.draw do
     resources :pictures
     resources :pages
     resources :documents
+
+    # Research references for leaves
+    resources :leaves, only: [] do
+      resources :references, only: [:index]
+    end
   end
 
   get "/:id/:slug", to: "books#show", constraints: { id: /\d+/ }, as: :slugged_book

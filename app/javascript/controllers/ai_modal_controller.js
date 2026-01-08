@@ -12,7 +12,8 @@ export default class extends Controller {
   static values = {
     action: String,
     originalContent: String,
-    hasSelection: Boolean
+    hasSelection: Boolean,
+    pageId: Number
   }
 
   connect() {
@@ -228,6 +229,11 @@ export default class extends Controller {
       // If there's a selection, that's the primary content to work on
       if (selection) {
         requestBody.selection = selection
+      }
+
+      // Include page_id for context association (e.g., research references)
+      if (this.hasPageIdValue) {
+        requestBody.page_id = this.pageIdValue
       }
 
       // Make request to get stream_id

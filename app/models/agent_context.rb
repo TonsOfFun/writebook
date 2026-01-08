@@ -38,6 +38,12 @@ class AgentContext < ApplicationRecord
            class_name: "AgentToolCall",
            dependent: :destroy
 
+  # References discovered during tool execution (URLs visited, links found)
+  has_many :references,
+           -> { order(position: :asc) },
+           class_name: "AgentReference",
+           dependent: :destroy
+
   # Validations
   validates :agent_name, presence: true
   validates :status, inclusion: { in: %w[pending processing completed failed] }
@@ -202,6 +208,22 @@ class AgentContext < ApplicationRecord
   # @return [Hash] tool call statistics
   def tool_call_statistics
     tool_calls.statistics
+  end
+
+  # === Reference Methods ===
+
+  # Extracts and persists references from completed tool calls
+  #
+  # @return [Array<AgentReference>] created/updated references
+  def extract_references!
+    AgentReference.extract_from_context(self)
+  end
+
+  # Returns references as card data for UI display
+  #
+  # @return [Array<Hash>]
+  def reference_cards
+    references.complete.map(&:as_card)
   end
 
   private

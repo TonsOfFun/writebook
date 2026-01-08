@@ -8,8 +8,11 @@ class ResearchAssistantAgent < ApplicationAgent
 
   class_attribute :browser_session, default: nil
 
-  # Enable context persistence for tracking research sessions
+# Enable context persistence for tracking research sessions
   has_context
+
+  # Enable automatic reference extraction from tool calls
+  extracts_references
 
   # Declare tools - auto-discovers from app/views/research_assistant_agent/tools/*.json.erb
   has_tools :navigate, :click, :fill_form, :extract_text, :extract_main_content, :extract_links, :page_info, :go_back

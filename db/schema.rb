@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2025_12_28_123555) do
+ActiveRecord::Schema[8.2].define(version: 2025_12_28_141706) do
   create_table "accesses", force: :cascade do |t|
     t.integer "book_id", null: false
     t.datetime "created_at", null: false
@@ -121,6 +121,33 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_28_123555) do
     t.datetime "updated_at", null: false
     t.index ["agent_context_id", "position"], name: "index_agent_messages_on_agent_context_id_and_position"
     t.index ["agent_context_id"], name: "index_agent_messages_on_agent_context_id"
+  end
+
+  create_table "agent_references", force: :cascade do |t|
+    t.integer "agent_context_id", null: false
+    t.integer "agent_tool_call_id"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "domain"
+    t.text "error_message"
+    t.text "extracted_content"
+    t.string "favicon_url"
+    t.json "metadata", default: {}
+    t.text "og_description"
+    t.string "og_image"
+    t.string "og_site_name"
+    t.string "og_title"
+    t.string "og_type"
+    t.integer "position", default: 0
+    t.string "status", default: "pending"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.string "url", null: false
+    t.index ["agent_context_id", "position"], name: "index_agent_references_on_agent_context_id_and_position"
+    t.index ["agent_context_id"], name: "index_agent_references_on_agent_context_id"
+    t.index ["agent_tool_call_id"], name: "index_agent_references_on_agent_tool_call_id"
+    t.index ["domain"], name: "index_agent_references_on_domain"
+    t.index ["url"], name: "index_agent_references_on_url"
   end
 
   create_table "agent_tool_calls", force: :cascade do |t|
@@ -243,6 +270,8 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_28_123555) do
   add_foreign_key "agent_generations", "agent_contexts"
   add_foreign_key "agent_generations", "agent_messages", column: "response_message_id"
   add_foreign_key "agent_messages", "agent_contexts"
+  add_foreign_key "agent_references", "agent_contexts"
+  add_foreign_key "agent_references", "agent_tool_calls"
   add_foreign_key "agent_tool_calls", "agent_contexts"
   add_foreign_key "edits", "leaves"
   add_foreign_key "leaves", "books"

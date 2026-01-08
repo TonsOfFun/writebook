@@ -1,0 +1,24 @@
+<%# References panel - slide-out panel for viewing research sources %>
+<%# locals: leaf, book %>
+
+<div class="references-panel"
+     data-controller="references-panel"
+     data-references-panel-target="panel"
+     id="references-panel">
+  <button type="button"
+          class="references-panel__close"
+          data-action="references-panel#close"
+          aria-label="Close references panel">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+    </svg>
+  </button>
+
+  <turbo-frame id="references-frame" src="<%= book_leaf_references_path(book, leaf) %>">
+    <div class="references">
+      <div class="references__loading">
+        <p class="txt-secondary">Loading references...</p>
+      </div>
+    </div>
+  </turbo-frame>
+</div>

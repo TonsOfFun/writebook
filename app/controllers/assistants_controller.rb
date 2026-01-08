@@ -101,12 +101,16 @@ class AssistantsController < ApplicationController
   def research
     stream_id = "research_assistant_#{SecureRandom.hex(8)}"
 
+    # Look up the page to associate context with for references
+    contextable = params[:page_id].present? ? Page.find_by(id: params[:page_id]) : nil
+
     ResearchAssistantAgent.with(
       topic: params[:topic],
       context: params[:context],
       full_content: params[:full_content],
       depth: params[:depth] || "standard",
-      stream_id: stream_id
+      stream_id: stream_id,
+      contextable: contextable
     ).research.generate_later
 
     render json: { stream_id: stream_id }
@@ -232,12 +236,16 @@ class AssistantsController < ApplicationController
       agent.brainstorm.generate_later
     when 'research'
       # Research uses a different agent with browser tools
+      # Look up the page to associate context with for references
+      contextable = params[:page_id].present? ? Page.find_by(id: params[:page_id]) : nil
+
       research_agent = ResearchAssistantAgent.with(
         topic: params[:topic] || content,
         context: params[:context],
         full_content: full_content,
         depth: params[:depth] || "standard",
-        stream_id: stream_id
+        stream_id: stream_id,
+        contextable: contextable
       )
       research_agent.research.generate_later
     when 'extract_image_text'
