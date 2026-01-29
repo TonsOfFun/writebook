@@ -4,6 +4,7 @@ class Source < ApplicationRecord
 
   belongs_to :report
 
+  has_many :source_tags, dependent: :destroy
   has_one_attached :file
 
   validates :name, presence: true

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_01_29_214008) do
+ActiveRecord::Schema[8.2].define(version: 2026_01_29_214234) do
   create_table "accesses", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "level", null: false
@@ -292,6 +292,20 @@ ActiveRecord::Schema[8.2].define(version: 2026_01_29_214008) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "source_tags", force: :cascade do |t|
+    t.string "context"
+    t.datetime "created_at", null: false
+    t.text "excerpt"
+    t.integer "position", default: 0
+    t.integer "source_id", null: false
+    t.integer "taggable_id", null: false
+    t.string "taggable_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["source_id"], name: "index_source_tags_on_source_id"
+    t.index ["taggable_type", "taggable_id", "source_id"], name: "index_source_tags_uniqueness", unique: true
+    t.index ["taggable_type", "taggable_id"], name: "index_source_tags_on_taggable"
+  end
+
   create_table "sources", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "extracted_content"
@@ -338,6 +352,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_01_29_214008) do
   add_foreign_key "chapters", "reports"
   add_foreign_key "edits", "chapters"
   add_foreign_key "sessions", "users"
+  add_foreign_key "source_tags", "sources"
   add_foreign_key "sources", "reports"
 
   # Virtual tables defined in this database.
