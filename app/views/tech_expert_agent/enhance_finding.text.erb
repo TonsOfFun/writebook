@@ -1,0 +1,36 @@
+Review and enhance this existing finding with additional evidence and recommendations.
+
+## Current Finding
+Title: <%= @finding.title %>
+Severity: <%= @finding.severity.titleize %>
+Status: <%= @finding.status_label %>
+Category: <%= @finding.category&.titleize&.gsub("_", " ") || "Not categorized" %>
+
+<% if @finding.description.present? %>
+### Description
+<%= @finding.description %>
+<% end %>
+
+<% if @finding.evidence.present? %>
+### Evidence
+<%= @finding.evidence %>
+<% end %>
+
+<% if @finding.recommendation.present? %>
+### Recommendation
+<%= @finding.recommendation %>
+<% end %>
+
+## Available Source Materials
+<%= @source_context %>
+
+## Instructions
+Enhance this finding by:
+1. Reviewing the current content for accuracy and completeness
+2. Adding additional evidence from source materials
+3. Strengthening the recommendations with specific actions
+4. Validating the severity assessment
+5. Suggesting any category changes if appropriate
+
+Return the enhanced version with clear improvements marked.
+Format as markdown that can replace the current finding content.
