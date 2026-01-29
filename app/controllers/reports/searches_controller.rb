@@ -1,9 +1,9 @@
-class Books::SearchesController < ApplicationController
+class Reports::SearchesController < ApplicationController
   allow_unauthenticated_access
 
-  include BookScoped
+  include ReportScoped
 
   def create
-    @leaves = @book.leaves.active.search(params[:search]).favoring_title.limit(50)
+    @chapters = @report.chapters.active.search(params[:search]).favoring_title.limit(50)
   end
 end

@@ -1,18 +1,18 @@
-class LeafablesController < ApplicationController
+class ChapterablesController < ApplicationController
   allow_unauthenticated_access only: :show
 
-  include SetBookLeaf
+  include SetReportChapter
 
   before_action :ensure_editable, except: :show
   before_action :broadcast_being_edited_indicator, only: :update
 
   def new
-    @leafable = new_leafable
+    @chapterable = new_chapterable
   end
 
   def create
-    @leaf = @book.press new_leafable, leaf_params
-    position_new_leaf @leaf
+    @chapter = @report.press new_chapterable, chapter_params
+    position_new_chapter @chapter
   end
 
   def show
@@ -22,7 +22,7 @@ class LeafablesController < ApplicationController
   end
 
   def update
-    @leaf.edit leafable_params: leafable_params, leaf_params: leaf_params
+    @chapter.edit chapterable_params: chapterable_params, chapter_params: chapter_params
 
     respond_to do |format|
       format.turbo_stream { render }
@@ -31,39 +31,39 @@ class LeafablesController < ApplicationController
   end
 
   def destroy
-    @leaf.trashed!
+    @chapter.trashed!
 
     respond_to do |format|
       format.turbo_stream { render }
-      format.html { redirect_to book_slug_url(@book) }
+      format.html { redirect_to report_slug_url(@report) }
     end
   end
 
   private
-    def leaf_params
-      default_leaf_params.merge params.fetch(:leaf, {}).permit(:title)
+    def chapter_params
+      default_chapter_params.merge params.fetch(:chapter, {}).permit(:title)
     end
 
-    def default_leaf_params
-      { title: new_leafable.model_name.human }
+    def default_chapter_params
+      { title: new_chapterable.model_name.human }
     end
 
-    def new_leafable
+    def new_chapterable
       raise NotImplementedError.new "Implement in subclass"
     end
 
-    def leafable_params
+    def chapterable_params
       raise NotImplementedError.new "Implement in subclass"
     end
 
-    def position_new_leaf(leaf)
+    def position_new_chapter(chapter)
       if position = params[:position]&.to_i
-        leaf.move_to_position position
+        chapter.move_to_position position
       end
     end
 
     def broadcast_being_edited_indicator
-      Turbo::StreamsChannel.broadcast_render_later_to @leaf, :being_edited,
-        partial: "leaves/being_edited_by", locals: { leaf: @leaf, user: Current.user }
+      Turbo::StreamsChannel.broadcast_render_later_to @chapter, :being_edited,
+        partial: "chapters/being_edited_by", locals: { chapter: @chapter, user: Current.user }
     end
 end

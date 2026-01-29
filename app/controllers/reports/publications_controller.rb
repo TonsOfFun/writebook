@@ -1,5 +1,5 @@
-class Books::PublicationsController < ApplicationController
-  include BookScoped
+class Reports::PublicationsController < ApplicationController
+  include ReportScoped
 
   before_action :ensure_editable, only: %i[ edit update ]
 
@@ -10,12 +10,12 @@ class Books::PublicationsController < ApplicationController
   end
 
   def update
-    @book.update! book_params
-    redirect_to book_slug_url(@book)
+    @report.update! report_params
+    redirect_to report_slug_url(@report)
   end
 
   private
-    def book_params
-      params.require(:book).permit(:published, :slug)
+    def report_params
+      params.require(:report).permit(:published, :slug)
     end
 end

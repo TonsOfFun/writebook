@@ -1,14 +1,14 @@
-class Books::BookmarksController < ApplicationController
+class Reports::BookmarksController < ApplicationController
   allow_unauthenticated_access
 
-  include BookScoped
+  include ReportScoped
 
   def show
-    @leaf = @book.leaves.active.find_by(id: last_read_leaf_id) if last_read_leaf_id.present?
+    @chapter = @report.chapters.active.find_by(id: last_read_chapter_id) if last_read_chapter_id.present?
   end
 
   private
-    def last_read_leaf_id
-      cookies["reading_progress_#{@book.id}"]
+    def last_read_chapter_id
+      cookies["reading_progress_#{@report.id}"]
     end
 end

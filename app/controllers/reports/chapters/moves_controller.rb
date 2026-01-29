@@ -1,11 +1,11 @@
-class Books::Leaves::MovesController < ApplicationController
-  include BookScoped
+class Reports::Chapters::MovesController < ApplicationController
+  include ReportScoped
 
   before_action :ensure_editable
 
   def create
-    leaf, *followed_by = leaves
-    leaf.move_to_position(position, followed_by: followed_by)
+    chapter, *followed_by = chapters
+    chapter.move_to_position(position, followed_by: followed_by)
   end
 
   private
@@ -13,7 +13,7 @@ class Books::Leaves::MovesController < ApplicationController
       params[:position].to_i
     end
 
-    def leaves
-      @book.leaves.find(Array(params[:id]))
+    def chapters
+      @report.chapters.find(Array(params[:id]))
     end
 end
