@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   mount MissionControl::Jobs::Engine, at: "/jobs"
 
-  root "books#index"
+  root "reports#index"
 
   resource :first_run, only: %i[ show create ]
 
@@ -21,12 +21,12 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :books, except: %i[ index show ] do
-    resource :publication, controller: "books/publications", only: %i[ show edit update ]
-    resource :bookmark, controller: "books/bookmarks", only: :show
+  resources :reports, except: %i[ index show ] do
+    resource :publication, controller: "reports/publications", only: %i[ show edit update ]
+    resource :bookmark, controller: "reports/bookmarks", only: :show
 
-    scope module: "books" do
-      namespace :leaves do
+    scope module: "reports" do
+      namespace :chapters do
         resources :moves, only: :create
       end
 
@@ -38,21 +38,21 @@ Rails.application.routes.draw do
     resources :pages
     resources :documents
 
-    # Research references for leaves
-    resources :leaves, only: [] do
+    # Research references for chapters
+    resources :chapters, only: [] do
       resources :references, only: [:index]
     end
   end
 
-  get "/:id/:slug", to: "books#show", constraints: { id: /\d+/ }, as: :slugged_book
-  get "/:book_id/:book_slug/:id/:slug", to: "leafables#show", constraints: { book_id: /\d+/, id: /\d+/ }, as: :slugged_leafable
+  get "/:id/:slug", to: "reports#show", constraints: { id: /\d+/ }, as: :slugged_report
+  get "/:report_id/:report_slug/:id/:slug", to: "chapterables#show", constraints: { report_id: /\d+/, id: /\d+/ }, as: :slugged_chapterable
 
-  direct :book_slug do |book, options|
-    route_for :slugged_book, book, book.slug, options
+  direct :report_slug do |report, options|
+    route_for :slugged_report, report, report.slug, options
   end
 
-  direct :leafable_slug do |leaf, options|
-    route_for :slugged_leafable, leaf.book, leaf.book.slug, leaf, leaf.slug, options
+  direct :chapterable_slug do |chapter, options|
+    route_for :slugged_chapterable, chapter.report, chapter.report.slug, chapter, chapter.slug, options
   end
 
   resources :pages, only: [] do
@@ -68,12 +68,12 @@ Rails.application.routes.draw do
     end
   end
 
-  direct :leafable do |leaf, options|
-    route_for "book_#{leaf.leafable_name}", leaf.book, leaf, options
+  direct :chapterable do |chapter, options|
+    route_for "report_#{chapter.chapterable_name}", chapter.report, chapter, options
   end
 
-  direct :edit_leafable do |leaf, options|
-    route_for "edit_book_#{leaf.leafable_name}", leaf.book, leaf, options
+  direct :edit_chapterable do |chapter, options|
+    route_for "edit_report_#{chapter.chapterable_name}", chapter.report, chapter, options
   end
 
   namespace :action_text, path: nil do

@@ -1,4 +1,4 @@
-module Book::Sluggable
+module Report::Sluggable
   extend ActiveSupport::Concern
 
   included do

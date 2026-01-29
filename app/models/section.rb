@@ -1,5 +1,5 @@
 class Section < ApplicationRecord
-  include Leafable
+  include Chapterable
 
   def searchable_content
     body

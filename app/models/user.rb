@@ -5,10 +5,10 @@ class User < ApplicationRecord
   has_secure_password validations: false
 
   has_many :accesses, dependent: :destroy
-  has_many :books, through: :accesses
-  has_many :leaves, through: :books
+  has_many :reports, through: :accesses
+  has_many :leaves, through: :reports
 
-  after_create :grant_access_to_everyone_books
+  after_create :grant_access_to_everyone_reports
 
   scope :active, -> { where(active: true) }
   scope :ordered, -> { order(:name) }
@@ -29,8 +29,8 @@ class User < ApplicationRecord
       email_address&.gsub(/@/, "-deactivated-#{SecureRandom.uuid}@")
     end
 
-    def grant_access_to_everyone_books
-      all_accesses = Book.with_everyone_access.ids.collect { |id| { book_id: id, level: :reader } }
+    def grant_access_to_everyone_reports
+      all_accesses = Report.with_everyone_access.ids.collect { |id| { report_id: id, level: :reader } }
       accesses.insert_all(all_accesses)
     end
 end

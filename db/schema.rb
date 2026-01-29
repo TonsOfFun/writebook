@@ -10,15 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_01_10_214053) do
+ActiveRecord::Schema[8.2].define(version: 2026_01_29_210904) do
   create_table "accesses", force: :cascade do |t|
-    t.integer "book_id", null: false
     t.datetime "created_at", null: false
     t.string "level", null: false
+    t.integer "report_id", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
-    t.index ["book_id"], name: "index_accesses_on_book_id"
-    t.index ["user_id", "book_id"], name: "index_accesses_on_user_id_and_book_id", unique: true
+    t.index ["report_id"], name: "index_accesses_on_report_id"
+    t.index ["user_id", "report_id"], name: "index_accesses_on_user_id_and_report_id", unique: true
     t.index ["user_id"], name: "index_accesses_on_user_id"
   end
 
@@ -197,17 +197,17 @@ ActiveRecord::Schema[8.2].define(version: 2026_01_10_214053) do
     t.index ["tool_call_id"], name: "index_agent_tool_calls_on_tool_call_id"
   end
 
-  create_table "books", force: :cascade do |t|
-    t.string "author"
+  create_table "chapters", force: :cascade do |t|
+    t.integer "chapterable_id", null: false
+    t.string "chapterable_type", null: false
     t.datetime "created_at", null: false
-    t.boolean "everyone_access", default: true, null: false
-    t.boolean "published", default: false, null: false
-    t.string "slug", null: false
-    t.string "subtitle"
-    t.string "theme", default: "blue", null: false
+    t.float "position_score", null: false
+    t.integer "report_id", null: false
+    t.string "status", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
-    t.index ["published"], name: "index_books_on_published"
+    t.index ["chapterable_type", "chapterable_id"], name: "index_leafs_on_leafable"
+    t.index ["report_id"], name: "index_chapters_on_report_id"
   end
 
   create_table "documents", force: :cascade do |t|
@@ -225,26 +225,13 @@ ActiveRecord::Schema[8.2].define(version: 2026_01_10_214053) do
 
   create_table "edits", force: :cascade do |t|
     t.string "action", null: false
+    t.integer "chapter_id", null: false
+    t.integer "chapterable_id", null: false
+    t.string "chapterable_type", null: false
     t.datetime "created_at", null: false
-    t.integer "leaf_id", null: false
-    t.integer "leafable_id", null: false
-    t.string "leafable_type", null: false
     t.datetime "updated_at", null: false
-    t.index ["leaf_id"], name: "index_edits_on_leaf_id"
-    t.index ["leafable_type", "leafable_id"], name: "index_edits_on_leafable"
-  end
-
-  create_table "leaves", force: :cascade do |t|
-    t.integer "book_id", null: false
-    t.datetime "created_at", null: false
-    t.integer "leafable_id", null: false
-    t.string "leafable_type", null: false
-    t.float "position_score", null: false
-    t.string "status", null: false
-    t.string "title", null: false
-    t.datetime "updated_at", null: false
-    t.index ["book_id"], name: "index_leaves_on_book_id"
-    t.index ["leafable_type", "leafable_id"], name: "index_leafs_on_leafable"
+    t.index ["chapter_id"], name: "index_edits_on_chapter_id"
+    t.index ["chapterable_type", "chapterable_id"], name: "index_edits_on_leafable"
   end
 
   create_table "pages", force: :cascade do |t|
@@ -256,6 +243,19 @@ ActiveRecord::Schema[8.2].define(version: 2026_01_10_214053) do
     t.string "caption"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "reports", force: :cascade do |t|
+    t.string "author"
+    t.datetime "created_at", null: false
+    t.boolean "everyone_access", default: true, null: false
+    t.boolean "published", default: false, null: false
+    t.string "slug", null: false
+    t.string "subtitle"
+    t.string "theme", default: "blue", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["published"], name: "index_reports_on_published"
   end
 
   create_table "sections", force: :cascade do |t|
@@ -289,7 +289,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_01_10_214053) do
     t.index ["name"], name: "index_users_on_name", unique: true
   end
 
-  add_foreign_key "accesses", "books"
+  add_foreign_key "accesses", "reports"
   add_foreign_key "accesses", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
@@ -301,11 +301,11 @@ ActiveRecord::Schema[8.2].define(version: 2026_01_10_214053) do
   add_foreign_key "agent_references", "agent_contexts"
   add_foreign_key "agent_references", "agent_tool_calls"
   add_foreign_key "agent_tool_calls", "agent_contexts"
-  add_foreign_key "edits", "leaves"
-  add_foreign_key "leaves", "books"
+  add_foreign_key "chapters", "reports"
+  add_foreign_key "edits", "chapters"
   add_foreign_key "sessions", "users"
 
   # Virtual tables defined in this database.
   # Note that virtual tables may not work with other database engines. Be careful if changing database.
-  create_virtual_table "leaf_search_index", "fts5", ["title", "content", "tokenize='porter'"]
+  create_virtual_table "chapter_search_index", "fts5", ["title", "content", "tokenize='porter'"]
 end

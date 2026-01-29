@@ -1,4 +1,4 @@
-module Leaf::Searchable
+module Chapter::Searchable
   extend ActiveSupport::Concern
 
   included do
@@ -6,7 +6,7 @@ module Leaf::Searchable
     after_update_commit  :update_in_search_index,   if: :searchable?
     after_destroy_commit :remove_from_search_index, if: :searchable?
 
-    scope :favoring_title, -> { order(Arel.sql("bm25(leaf_search_index, 2.0)")) }
+    scope :favoring_title, -> { order(Arel.sql("bm25(chapter_search_index, 2.0)")) }
   end
 
   class_methods do
@@ -25,17 +25,17 @@ module Leaf::Searchable
       if terms = sanitize_query_syntax(terms)
         with_search_results_for(terms)
           .select(
-            "leaves.*",
-            "highlight(leaf_search_index, 0, '<mark>', '</mark>') as title_match",
-            "snippet(leaf_search_index, 1, '<mark>', '</mark>', '...', 20) as content_match")
+            "chapters.*",
+            "highlight(chapter_search_index, 0, '<mark>', '</mark>') as title_match",
+            "snippet(chapter_search_index, 1, '<mark>', '</mark>', '...', 20) as content_match")
       else
         none
       end
     end
 
     def with_search_results_for(terms)
-      joins("join leaf_search_index on leaves.id = leaf_search_index.rowid")
-        .where("leaf_search_index match ?", terms)
+      joins("join chapter_search_index on chapters.id = chapter_search_index.rowid")
+        .where("chapter_search_index match ?", terms)
     end
   end
 
@@ -45,9 +45,9 @@ module Leaf::Searchable
 
   def matches_for_highlight(terms)
     if terms = self.class.sanitize_query_syntax(terms)
-      content = Leaf.with_search_results_for(terms)
+      content = Chapter.with_search_results_for(terms)
         .where(id: id)
-        .pick(Arel.sql("highlight(leaf_search_index, 1, '<mark>', '</mark>')"))
+        .pick(Arel.sql("highlight(chapter_search_index, 1, '<mark>', '</mark>')"))
 
       content ? unique_matching_terms(content) : []
     end
@@ -59,13 +59,13 @@ module Leaf::Searchable
     end
 
     def create_in_search_index
-      execute_sql_with_binds "insert into leaf_search_index(rowid, title, content ) values (?, ?, ?)",
+      execute_sql_with_binds "insert into chapter_search_index(rowid, title, content ) values (?, ?, ?)",
         id, title, searchable_content
     end
 
     def update_in_search_index
       transaction do
-        updated = execute_sql_with_binds "update leaf_search_index set title = ?, content = ? where rowid = ?",
+        updated = execute_sql_with_binds "update chapter_search_index set title = ?, content = ? where rowid = ?",
           title, searchable_content, id
 
         create_in_search_index unless updated
@@ -73,7 +73,7 @@ module Leaf::Searchable
     end
 
     def remove_from_search_index
-      execute_sql_with_binds "delete from leaf_search_index where rowid = ?", id
+      execute_sql_with_binds "delete from chapter_search_index where rowid = ?", id
     end
 
     def execute_sql_with_binds(*statement)
