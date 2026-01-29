@@ -1,0 +1,7 @@
+<%= turbo_stream.prepend "sources-list" do %>
+  <%= render "source", source: @source %>
+<% end %>
+
+<%= turbo_stream.replace "source-form" do %>
+  <%= render "form", source: @report.sources.new %>
+<% end %>

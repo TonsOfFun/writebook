@@ -94,6 +94,10 @@
 
       <% if @report.editable? %>
         <%= render "reports/create_buttons", report: @report %>
+        <%= link_to report_sources_path(@report), class: "btn txt-medium", title: "Manage sources" do %>
+          <%= image_tag "file.svg", aria: { hidden: true }, size: 24 %>
+          <span class="for-screen-reader">Sources</span>
+        <% end %>
         <%= render "reports/mode_buttons", report: @report %>
       <% end %>
     </div>

@@ -31,6 +31,7 @@ Rails.application.routes.draw do
       end
 
       resource :search
+      resources :sources
     end
 
     resources :sections

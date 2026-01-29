@@ -2,6 +2,7 @@ class Report < ApplicationRecord
   include Accessable, Sluggable, SolidAgent::Contextable
 
   has_many :chapters, dependent: :destroy
+  has_many :sources, dependent: :destroy
   has_one_attached :cover, dependent: :purge_later
 
   scope :ordered, -> { order(:title) }

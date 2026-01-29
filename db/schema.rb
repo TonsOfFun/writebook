@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_01_29_210904) do
+ActiveRecord::Schema[8.2].define(version: 2026_01_29_212815) do
   create_table "accesses", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "level", null: false
@@ -277,6 +277,25 @@ ActiveRecord::Schema[8.2].define(version: 2026_01_29_210904) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "sources", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "extracted_content"
+    t.json "metadata", default: {}
+    t.string "name", null: false
+    t.datetime "processed_at"
+    t.text "processing_error"
+    t.string "processing_status", default: "pending"
+    t.text "raw_content"
+    t.integer "report_id", null: false
+    t.string "source_type", null: false
+    t.text "summary"
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.index ["processing_status"], name: "index_sources_on_processing_status"
+    t.index ["report_id"], name: "index_sources_on_report_id"
+    t.index ["source_type"], name: "index_sources_on_source_type"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true
     t.datetime "created_at", null: false
@@ -304,6 +323,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_01_29_210904) do
   add_foreign_key "chapters", "reports"
   add_foreign_key "edits", "chapters"
   add_foreign_key "sessions", "users"
+  add_foreign_key "sources", "reports"
 
   # Virtual tables defined in this database.
   # Note that virtual tables may not work with other database engines. Be careful if changing database.
