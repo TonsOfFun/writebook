@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2025_12_28_141706) do
+ActiveRecord::Schema[8.2].define(version: 2026_01_10_214053) do
   create_table "accesses", force: :cascade do |t|
     t.integer "book_id", null: false
     t.datetime "created_at", null: false
@@ -83,6 +83,32 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_28_141706) do
     t.datetime "updated_at", null: false
     t.index ["contextable_type", "contextable_id"], name: "index_agent_contexts_on_contextable"
     t.index ["trace_id"], name: "index_agent_contexts_on_trace_id"
+  end
+
+  create_table "agent_fragments", force: :cascade do |t|
+    t.string "action_type"
+    t.integer "agent_context_id", null: false
+    t.text "applied_content"
+    t.string "content_hash"
+    t.integer "contextable_id"
+    t.string "contextable_type"
+    t.datetime "created_at", null: false
+    t.json "detected_references"
+    t.integer "end_offset"
+    t.string "fragment_type"
+    t.text "generated_content"
+    t.json "metadata"
+    t.text "original_content"
+    t.integer "parent_fragment_id"
+    t.integer "start_offset"
+    t.string "status", default: "pending"
+    t.datetime "updated_at", null: false
+    t.index ["agent_context_id"], name: "index_agent_fragments_on_agent_context_id"
+    t.index ["content_hash"], name: "index_agent_fragments_on_content_hash"
+    t.index ["contextable_type", "contextable_id"], name: "index_agent_fragments_on_contextable"
+    t.index ["contextable_type", "contextable_id"], name: "index_agent_fragments_on_contextable_type_and_contextable_id"
+    t.index ["parent_fragment_id"], name: "index_agent_fragments_on_parent_fragment_id"
+    t.index ["status"], name: "index_agent_fragments_on_status"
   end
 
   create_table "agent_generations", force: :cascade do |t|
@@ -267,6 +293,8 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_28_141706) do
   add_foreign_key "accesses", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "agent_fragments", "agent_contexts"
+  add_foreign_key "agent_fragments", "agent_fragments", column: "parent_fragment_id"
   add_foreign_key "agent_generations", "agent_contexts"
   add_foreign_key "agent_generations", "agent_messages", column: "response_message_id"
   add_foreign_key "agent_messages", "agent_contexts"

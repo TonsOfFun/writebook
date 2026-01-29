@@ -12,6 +12,13 @@ Context: <%= @context %>
 
 <% end %>
 <% end %>
+<% if @reference_context.present? %>
+## Reference sources to consider:
+The following sources were found in the selected text. Use them to ensure accuracy and add relevant details:
+
+<%= @reference_context %>
+
+<% end %>
 <% if @has_selection %>
 ## Selected text to improve:
 <%= @selection %>

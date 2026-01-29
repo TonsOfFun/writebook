@@ -44,6 +44,11 @@ class AgentContext < ApplicationRecord
            class_name: "AgentReference",
            dependent: :destroy
 
+  # Content fragments for tracking AI transformations and version history
+  has_many :fragments,
+           class_name: "AgentFragment",
+           dependent: :destroy
+
   # Validations
   validates :agent_name, presence: true
   validates :status, inclusion: { in: %w[pending processing completed failed] }

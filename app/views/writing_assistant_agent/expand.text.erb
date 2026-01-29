@@ -8,6 +8,13 @@ Please expand the following<%= @has_selection ? " selected" : "" %> text with mo
 
 <% end %>
 <% end %>
+<% if @reference_context.present? %>
+## Reference sources to incorporate:
+The following sources were found in the selected text. Use them to add accurate details and examples:
+
+<%= @reference_context %>
+
+<% end %>
 <% if @has_selection %>
 ## Selected text to expand:
 <%= @selection %>
