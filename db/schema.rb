@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_01_29_214234) do
+ActiveRecord::Schema[8.2].define(version: 2026_01_29_214504) do
   create_table "accesses", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "level", null: false
@@ -325,6 +325,31 @@ ActiveRecord::Schema[8.2].define(version: 2026_01_29_214234) do
     t.index ["source_type"], name: "index_sources_on_source_type"
   end
 
+  create_table "suggestions", force: :cascade do |t|
+    t.boolean "ai_generated", default: false
+    t.integer "author_id"
+    t.text "comment"
+    t.string "content_hash"
+    t.datetime "created_at", null: false
+    t.integer "end_offset"
+    t.text "original_text"
+    t.datetime "resolved_at"
+    t.integer "resolved_by_id"
+    t.integer "start_offset"
+    t.string "status", default: "pending", null: false
+    t.integer "suggestable_id", null: false
+    t.string "suggestable_type", null: false
+    t.text "suggested_text"
+    t.string "suggestion_type", default: "edit", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ai_generated"], name: "index_suggestions_on_ai_generated"
+    t.index ["author_id"], name: "index_suggestions_on_author_id"
+    t.index ["resolved_by_id"], name: "index_suggestions_on_resolved_by_id"
+    t.index ["status"], name: "index_suggestions_on_status"
+    t.index ["suggestable_type", "suggestable_id"], name: "index_suggestions_on_suggestable"
+    t.index ["suggestion_type"], name: "index_suggestions_on_suggestion_type"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true
     t.datetime "created_at", null: false
@@ -354,6 +379,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_01_29_214234) do
   add_foreign_key "sessions", "users"
   add_foreign_key "source_tags", "sources"
   add_foreign_key "sources", "reports"
+  add_foreign_key "suggestions", "users", column: "author_id"
+  add_foreign_key "suggestions", "users", column: "resolved_by_id"
 
   # Virtual tables defined in this database.
   # Note that virtual tables may not work with other database engines. Be careful if changing database.

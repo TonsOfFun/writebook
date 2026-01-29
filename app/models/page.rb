@@ -1,6 +1,7 @@
 class Page < ApplicationRecord
   include Chapterable
   include Taggable
+  include Suggestable
 
   cattr_accessor :preview_renderer do
     renderer = Redcarpet::Render::HTML.new(ActionText::Markdown::DEFAULT_RENDERER_OPTIONS)

@@ -1,6 +1,7 @@
 class Finding < ApplicationRecord
   include Chapterable
   include Taggable
+  include Suggestable
 
   SEVERITIES = %w[critical high medium low info].freeze
   STATUSES = %w[open confirmed resolved wont_fix].freeze

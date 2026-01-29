@@ -1,0 +1,40 @@
+Review this executive summary for a technology diligence report.
+
+## Report: <%= @report.title %>
+<% if @report.subtitle.present? %>Subtitle: <%= @report.subtitle %><% end %>
+<% if @report.author.present? %>Author: <%= @report.author %><% end %>
+
+## Executive Summary
+<%= @summary.presence || "[No summary provided]" %>
+
+## Review Criteria
+An effective executive summary should:
+
+1. **Lead with Key Findings**
+   - Most critical issues first
+   - Clear risk assessment
+   - Business impact summary
+
+2. **Be Concise**
+   - Ideally 1-2 paragraphs
+   - No unnecessary detail
+   - Actionable takeaways
+
+3. **Provide Context**
+   - Scope of assessment
+   - Key assumptions
+   - Limitations if relevant
+
+4. **Guide Action**
+   - Clear recommendations
+   - Priority areas
+   - Suggested next steps
+
+## Instructions
+Provide suggestions to improve this summary.
+If no summary exists, draft one based on best practices.
+
+Format suggestions as:
+**Suggestion**: Brief description
+**Original**: Text to change (or "[Add new]" for additions)
+**Suggested**: Improved or new text

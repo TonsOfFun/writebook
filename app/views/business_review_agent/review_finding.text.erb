@@ -1,0 +1,55 @@
+Review this technology diligence finding for business appropriateness.
+
+## Finding Details
+Title: <%= @finding.title %>
+Severity: <%= @finding.severity.titleize %>
+Category: <%= @finding.category&.titleize&.gsub("_", " ") || "Not categorized" %>
+Status: <%= @finding.status_label %>
+
+<% if @finding.description.present? %>
+### Description
+<%= @finding.description %>
+<% end %>
+
+<% if @finding.evidence.present? %>
+### Evidence
+<%= @finding.evidence %>
+<% end %>
+
+<% if @finding.recommendation.present? %>
+### Recommendation
+<%= @finding.recommendation %>
+<% end %>
+
+## Review Criteria
+Evaluate this finding for:
+
+1. **Severity Assessment**
+   - Is the severity level appropriate?
+   - Are business impacts clearly articulated?
+   - Is the risk properly contextualized?
+
+2. **Clarity for Stakeholders**
+   - Can a non-technical executive understand this?
+   - Are technical terms explained?
+   - Is the "so what" clear?
+
+3. **Actionability**
+   - Are recommendations specific?
+   - Is there a clear path forward?
+   - Are resources/timeline considerations mentioned?
+
+4. **Professional Tone**
+   - Is language objective and fact-based?
+   - Avoids inflammatory or alarming language?
+   - Maintains constructive tone?
+
+## Instructions
+Provide suggestions to improve this finding.
+Format each suggestion as:
+
+**Suggestion**: Brief description of the improvement
+**Original**: The exact text to change
+**Suggested**: The improved text
+
+Also provide an overall assessment with any category or severity recommendations.

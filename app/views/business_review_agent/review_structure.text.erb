@@ -1,0 +1,42 @@
+Review the structure of this technology diligence report.
+
+## Report: <%= @report.title %>
+Total Chapters: <%= @chapters.count %>
+Findings: <%= @findings_count %>
+
+## Current Structure
+<% @chapters.each_with_index do |chapter, index| %>
+<%= index + 1 %>. <%= chapter.title %> (<%= chapter.chapterable_type %>)
+<% end %>
+
+## Review Criteria
+A well-structured diligence report should have:
+
+1. **Clear Organization**
+   - Logical flow of topics
+   - Related findings grouped together
+   - Progressive depth (overview to detail)
+
+2. **Comprehensive Coverage**
+   - All relevant areas addressed
+   - No significant gaps
+   - Appropriate depth per topic
+
+3. **Balanced Presentation**
+   - Findings distributed appropriately
+   - Not front-loaded or back-loaded
+   - Clear sections and transitions
+
+4. **Professional Format**
+   - Executive summary (if needed)
+   - Clear section headers
+   - Appendices for detailed data
+
+## Instructions
+Assess the current structure and provide recommendations for:
+1. Reordering chapters if needed
+2. Missing sections that should be added
+3. Sections that might be merged or split
+4. Overall structural improvements
+
+Be specific about where changes should occur.
