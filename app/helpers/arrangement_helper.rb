@@ -1,5 +1,5 @@
 module ArrangementHelper
-  def arrangement_tag(book, **, &)
+  def arrangement_tag(report, **, &)
     tag.div data: {
       controller: "arrangement reading-progress",
       arrangement_cursor_class: "arrangement-cursor",
@@ -7,9 +7,9 @@ module ArrangementHelper
       arrangement_placeholder_class: "arrangement-placeholder",
       arrangement_adding_mode_class: "arrangement--adding",
       arrangement_move_mode_class: "arrangement-move-mode",
-      arrangement_url_value: book_leaves_moves_url(book),
-      reading_progress_book_id_value: book.id,
-      reading_progress_last_read_class: "toc__leaf--last-read"
+      arrangement_url_value: report_chapters_moves_url(report),
+      reading_progress_report_id_value: report.id,
+      reading_progress_last_read_class: "toc__chapter--last-read"
     }, **, &
   end
 

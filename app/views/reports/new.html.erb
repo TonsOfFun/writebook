@@ -1,0 +1,20 @@
+<% content_for(:title) { "Create a new report" } %>
+
+<% content_for :header do %>
+  <nav>
+    <%= link_to root_path, class: "btn flex-item-justify-start" do %>
+      <%= image_tag "arrow-left.svg", aria: { hidden: true }, size: 24 %>
+      <span class="for-screen-reader">Cancel and go back</span>
+    <% end %>
+  </nav>
+<% end %>
+
+<%= render "reports/form", report: @report, users: @users, creating_user: Current.user %>
+
+<% content_for :footer do %>
+  <nav class="new-report-btn flex justify-center pad">
+    <button type="submit" form="report-editor", class="btn btn--reversed txt-medium--responsive" aria-label="Create report" title="Create report">
+      <%= image_tag "arrow-right.svg", aria: { hidden: true }, size: 24 %>
+    </button>
+  </nav>
+<% end %>

@@ -1,5 +1,5 @@
 <div data-controller="ai-modal" data-ai-modal-page-id-value="<%= page.id %>">
-  <%= leafable_edit_form(page, id: "leafable-editor", data: { controller: "assistant house-md-caption markdown-upload" }) do |form| %>
+  <%= chapterable_edit_form(page, id: "chapterable-editor", data: { controller: "assistant house-md-caption markdown-upload" }) do |form| %>
     <%= form.markdown_area :body, toolbar: "house_toolbar", required: true, autofocus: true, class: "page__editor" %>
   <% end %>
 

@@ -1,0 +1,25 @@
+<menu class="sidebar__content toc flex flex-column">
+  <header>
+    <h1 class="txt-large--responsive margin-none">
+      <%= report.title %>
+    </h1>
+  </header>
+
+  <% report.chapters.active.with_chapterables.positioned.each do |chapter| %>
+    <li class="flex min-width <%= "chapter--section" if chapter.section? -%>">
+      <% if chapter.report.editable? %>
+        <%= link_to edit_chapterable_path(chapter), class: "toc__title hide_from_reading_mode min-width", data: { turbo_frame: "_top" } do %>
+          <span class="overflow-ellipsis"><%= chapter.title %></span>
+        <% end %>
+
+        <%= link_to chapterable_slug_path(chapter), class: "toc__title hide_from_edit_mode min-width", data: { turbo_frame: "_top" } do %>
+          <span class="overflow-ellipsis"><%= chapter.title %></span>
+        <% end %>
+      <% else %>
+        <%= link_to chapterable_slug_path(chapter), class: "toc__title min-width", data: { turbo_frame: "_top" } do %>
+          <span class="overflow-ellipsis"><%= chapter.title %></span>
+        <% end %>
+      <% end %>
+    </li>
+  <% end %>
+</menu>

@@ -1,0 +1,6 @@
+<%= link_to edit_chapterable_path(chapter, search: params[:search]), class: "search__result hide_from_reading_mode txt-ink", data: { turbo_frame: "_top" } do %>
+  <strong><%= chapter.title_match.html_safe %>:</strong> <%= chapter.content_match.html_safe %>
+<% end %>
+<%= link_to chapterable_slug_path(chapter, search: params[:search]), class: "search__result hide_from_edit_mode txt-ink", data: { turbo_frame: "_top" } do %>
+  <strong><%= chapter.title_match.html_safe %>:</strong> <%= chapter.content_match.html_safe %>
+<% end %>

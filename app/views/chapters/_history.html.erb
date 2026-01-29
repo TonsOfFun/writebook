@@ -1,0 +1,6 @@
+<% if chapter.edits.any? %>
+  <%= link_to page_edit_path(chapter, "latest"), class: "btn flex-item-no-shrink txt-small" do %>
+    <%= image_tag "history.svg", aria: { hidden: "true" }, size: "24" %>
+    <span class="for-screen-reader">Editing history</span>
+  <% end %>
+<% end %>

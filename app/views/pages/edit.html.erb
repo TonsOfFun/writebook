@@ -1,12 +1,12 @@
 <% content_for(:title) { "Edit #{ @page.title }" } %>
 
 <% content_for :header do %>
-  <%= render "leafables/edit_header", leaf: @leaf, book: @book %>
+  <%= render "chapterables/edit_header", chapter: @chapter, report: @report %>
 <% end %>
 
 <% content_for :toolbar do %>
   <div class="page-toolbar fill-selected align-center gap-half margin-block-end-double">
-    <%= editing_mode_toggle_switch(@leaf, checked: true) %>
+    <%= editing_mode_toggle_switch(@chapter, checked: true) %>
 
     <span class="separator margin-inline-half" aria-hidden="true"></span>
 
@@ -16,7 +16,7 @@
 
     <span class="separator margin-inline-half" aria-hidden="true"></span>
 
-    <%= render "leaves/history", leaf: @leaf %>
+    <%= render "chapters/history", chapter: @chapter %>
 
     <%# References toggle button %>
     <button type="button"
@@ -32,7 +32,7 @@
       <span class="for-screen-reader">Research Sources</span>
     </button>
 
-    <button type="submit" form="leafable-editor" class="btn flex page-toolbar__save flex-item-justify-end flex-item-no-shrink txt-small">
+    <button type="submit" form="chapterable-editor" class="btn flex page-toolbar__save flex-item-justify-end flex-item-no-shrink txt-small">
       <%= image_tag "check.svg", aria: { hidden: true }, size: 24 %>
       <span class="for-screen-reader">Save</span>
     </button>
@@ -40,16 +40,16 @@
 <% end %>
 
 <% content_for :sidebar do %>
-  <%= render "leaves/sidebar", book: @book %>
+  <%= render "chapters/sidebar", report: @report %>
 <% end %>
 
 <article class="layout--reading">
-  <%= render "leaves/being_edited_indicator", leaf: @leaf %>
+  <%= render "chapters/being_edited_indicator", chapter: @chapter %>
 
-  <%= render "pages/form", book: @book, page: @page %>
+  <%= render "pages/form", report: @report, page: @page %>
 </article>
 
-<%= render "leaves/edit_footer", leaf: @leaf %>
+<%= render "chapters/edit_footer", chapter: @chapter %>
 
 <%# References panel for research sources %>
-<%= render "references/panel", leaf: @leaf, book: @book %>
+<%= render "references/panel", chapter: @chapter, report: @report %>

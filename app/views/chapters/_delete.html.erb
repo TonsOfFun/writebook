@@ -1,0 +1,4 @@
+<%= button_to chapterable_path(chapter), method: :delete, data: { turbo_confirm: "Are you sure you want to delete this page?" }, class: "btn btn--negative txt-small min-width", form_class: "chapter__delete" do %>
+  <%= image_tag "minus.svg", aria: { hidden: true }, size: 24 %>
+  <span class="for-screen-reader">Delete <%= chapter.title %></span>
+<% end %>
