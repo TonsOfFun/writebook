@@ -38,6 +38,7 @@ Rails.application.routes.draw do
     resources :pictures
     resources :pages
     resources :documents
+    resources :findings
 
     # Research references for chapters
     resources :chapters, only: [] do

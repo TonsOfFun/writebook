@@ -1,0 +1,33 @@
+<%= chapterable_edit_form(finding, id: "chapterable-editor", class: "finding-form pad") do |form| %>
+  <div class="finding-form__meta flex gap wrap margin-block-end">
+    <div class="form-group">
+      <%= form.label :severity, class: "txt-small txt-faint" %>
+      <%= form.select :severity, Finding::SEVERITIES.map { |s| [s.titleize, s] }, {}, class: "input" %>
+    </div>
+
+    <div class="form-group">
+      <%= form.label :status, class: "txt-small txt-faint" %>
+      <%= form.select :status, Finding::STATUSES.map { |s| [s.titleize.gsub("_", " "), s] }, {}, class: "input" %>
+    </div>
+
+    <div class="form-group">
+      <%= form.label :category, class: "txt-small txt-faint" %>
+      <%= form.select :category, Finding::CATEGORIES.map { |c| [c.titleize.gsub("_", " "), c] }, { include_blank: "Select category..." }, class: "input" %>
+    </div>
+  </div>
+
+  <div class="form-group margin-block-end">
+    <%= form.label :description, "Description", class: "txt-medium" %>
+    <%= form.text_area :description, rows: 6, class: "input input--full-width", placeholder: "Describe the finding in detail..." %>
+  </div>
+
+  <div class="form-group margin-block-end">
+    <%= form.label :evidence, "Evidence", class: "txt-medium" %>
+    <%= form.text_area :evidence, rows: 4, class: "input input--full-width", placeholder: "Supporting observations, code samples, or data..." %>
+  </div>
+
+  <div class="form-group">
+    <%= form.label :recommendation, "Recommendation", class: "txt-medium" %>
+    <%= form.text_area :recommendation, rows: 4, class: "input input--full-width", placeholder: "Suggested remediation steps..." %>
+  </div>
+<% end %>

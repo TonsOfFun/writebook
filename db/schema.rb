@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_01_29_212815) do
+ActiveRecord::Schema[8.2].define(version: 2026_01_29_214008) do
   create_table "accesses", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "level", null: false
@@ -232,6 +232,21 @@ ActiveRecord::Schema[8.2].define(version: 2026_01_29_212815) do
     t.datetime "updated_at", null: false
     t.index ["chapter_id"], name: "index_edits_on_chapter_id"
     t.index ["chapterable_type", "chapterable_id"], name: "index_edits_on_leafable"
+  end
+
+  create_table "findings", force: :cascade do |t|
+    t.string "category"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.text "evidence"
+    t.json "metadata", default: {}
+    t.text "recommendation"
+    t.string "severity", default: "medium", null: false
+    t.string "status", default: "open", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category"], name: "index_findings_on_category"
+    t.index ["severity"], name: "index_findings_on_severity"
+    t.index ["status"], name: "index_findings_on_status"
   end
 
   create_table "pages", force: :cascade do |t|

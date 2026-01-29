@@ -1,7 +1,7 @@
 module Chapterable
   extend ActiveSupport::Concern
 
-  TYPES = %w[ Page Section Picture Document ]
+  TYPES = %w[ Page Section Picture Document Finding ]
 
   included do
     include SolidAgent::Contextable
