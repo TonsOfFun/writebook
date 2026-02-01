@@ -1,0 +1,30 @@
+Draft a technology diligence finding on the following topic:
+
+Topic: <%= @topic %>
+Category: <%= @category.titleize.gsub("_", " ") %>
+
+## Available Source Materials
+<%= @source_context %>
+
+## Instructions
+Create a comprehensive finding that includes:
+
+1. **Title**: A clear, actionable title for this finding
+2. **Severity**: Assess as critical, high, medium, low, or info based on:
+   - Impact on business operations
+   - Security implications
+   - Difficulty to remediate
+   - Likelihood of exploitation or occurrence
+3. **Description**: Detailed explanation including:
+   - What the issue is
+   - Why it matters
+   - Technical details where relevant
+4. **Evidence**: Specific observations from the source materials
+   - Quote relevant sections
+   - Reference source IDs
+5. **Recommendation**: Clear remediation steps including:
+   - Immediate actions
+   - Long-term solutions
+   - Resources needed
+
+Format as markdown with clear sections.

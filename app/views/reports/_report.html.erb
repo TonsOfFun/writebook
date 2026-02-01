@@ -1,0 +1,21 @@
+<% cache report do %>
+  <figure class="library__report <%= "theme--#{report&.theme}" unless report.cover.attached? %>">
+    <div class="flex flex-column gap-half">
+      <div class="flex-inline position-relative center">
+        <% if report.cover.attached? %>
+          <%= image_tag report.cover, alt: "Report cover", class: "report__cover" %>
+        <% else %>
+          <span class="report__cover-wrapper">
+            <%= image_tag "empty-cover.png", alt: "Report cover", class: "report__cover margin-block-none center" %>
+            <span class="report__title overflow-line-clamp pad txt-align-start txt-tight-lines" style="--lines: 6" aria-hidden="true"><%= report.title %></span>
+          </span>
+        <% end %>
+        <%= turbo_frame_tag dom_id(report, :bookmark), src: report_bookmark_path(report), target: "_top" %>
+      </div>
+      <h2 class="margin-none flex flex-column txt-normal txt-tight-lines txt-medium--responsive">
+        <strong><%= report.title %></strong>
+        <span class="overflow-line-clamp"><%= report.author %></span>
+      </h2>
+    </div>
+  </figure>
+<% end %>

@@ -1,6 +1,6 @@
 class Edit < ApplicationRecord
-  belongs_to :leaf
-  delegated_type :leafable, types: Leafable::TYPES, dependent: :destroy
+  belongs_to :chapter
+  delegated_type :chapterable, types: Chapterable::TYPES, dependent: :destroy
 
   enum :action, %w[ revision trash ].index_by(&:itself)
 
@@ -9,10 +9,10 @@ class Edit < ApplicationRecord
   scope :after, ->(edit) { where("created_at > ?", edit.created_at) }
 
   def previous
-    leaf.edits.before(self).last
+    chapter.edits.before(self).last
   end
 
   def next
-    leaf.edits.after(self).first
+    chapter.edits.after(self).first
   end
 end

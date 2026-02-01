@@ -1,0 +1,28 @@
+Analyze this content and suggest which sources from the library might be relevant.
+
+## Content to Analyze
+<%= @content %>
+
+## Available Sources
+<% @source_summaries.each do |source| %>
+- ID: <%= source[:id] %> | <%= source[:name] %> (<%= source[:type].upcase %>)
+  <%= source[:summary] if source[:summary].present? %>
+<% end %>
+
+## Instructions
+Review the content and identify which sources would be most relevant as citations.
+For each suggested source, explain:
+1. Why it's relevant to the content
+2. What specific claims or statements it could support
+3. Confidence level (high, medium, low)
+
+Format your response as a JSON array:
+```json
+[
+  {
+    "source_id": 1,
+    "relevance": "High confidence - directly supports the security claims",
+    "suggested_context": "Page 12, section on authentication"
+  }
+]
+```

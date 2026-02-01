@@ -1,12 +1,19 @@
 Please expand the following<%= @has_selection ? " selected" : "" %> text with more detail and depth:
 
 <% if @related_content.present? %>
-## Related sections from this book (use for context and to maintain consistency):
+## Related sections from this report (use for context and to maintain consistency):
 <% @related_content.each do |related| %>
 ### <%= related[:title] %>
 <%= related[:content] %>
 
 <% end %>
+<% end %>
+<% if @reference_context.present? %>
+## Reference sources to incorporate:
+The following sources were found in the selected text. Use them to add accurate details and examples:
+
+<%= @reference_context %>
+
 <% end %>
 <% if @has_selection %>
 ## Selected text to expand:

@@ -1,11 +1,11 @@
-class DocumentsController < LeafablesController
+class DocumentsController < ChapterablesController
   private
 
-  def new_leafable
-    Document.new leafable_params
+  def new_chapterable
+    Document.new chapterable_params
   end
 
-  def leafable_params
+  def chapterable_params
     params.fetch(:document, {}).permit(:file)
   end
 end

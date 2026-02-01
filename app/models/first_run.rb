@@ -1,5 +1,5 @@
 class FirstRun
-  ACCOUNT_NAME = "Writebook"
+  ACCOUNT_NAME = "Dill"
 
   def self.create!(user_params)
     account = Account.create!(name: ACCOUNT_NAME)

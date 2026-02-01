@@ -1,0 +1,60 @@
+<% cache [ chapter, chapter.report, chapter.report.editable? ] do %>
+  <%= chapter_item_tag(chapter) do %>
+    <span class="btn btn--link arrangement__handle txt-small">
+      <%= image_tag "handle.svg", aria: { hidden: true }, size: 24 %>
+      <span class="for-screen-reader">Move <%= chapter.title %></span>
+    </span>
+
+    <%= render "chapters/delete", chapter: chapter %>
+
+    <div class="toc__thumbnail <%= "toc__thumbnail--dark" if chapter.section&.theme == "dark" %>">
+      <% if chapter.report.editable? %>
+        <%= link_to edit_chapterable_path(chapter), class: "toc__link hide_from_reading_mode", data: { turbo_frame: "_top" } do %>
+          <span class="for-screen-reader">Edit <%= chapter.title %></span>
+        <% end %>
+
+        <%= link_to chapterable_slug_path(chapter), class: "toc__link hide_from_edit_mode", data: { turbo_frame: "_top" } do %>
+          <span class="for-screen-reader">Open <%= chapter.title %></span>
+        <% end %>
+      <% else %>
+        <%= link_to chapterable_slug_path(chapter), class: "toc__link", data: { turbo_frame: "_top" } do %>
+          <span class="for-screen-reader">Open <%= chapter.title %></span>
+        <% end %>
+      <% end %>
+
+      <%= tag.span(simple_format(chapter.section.body), class: "txt-align-center") if chapter.section? %>
+
+      <%= sanitize_content chapter.page.html_preview if chapter.page? %>
+
+      <% if chapter.picture? %>
+        <%= image_tag chapter.chapterable.image.attached? ? chapter.chapterable.image.variant(:large) : "default-picture.webp" %>
+      <% end %>
+    </div>
+
+    <% if chapter.report.editable? %>
+      <%= link_to edit_chapterable_path(chapter), class: "toc__title min-width hide_from_reading_mode", data: { turbo_frame: "_top" } do %>
+        <span class="overflow-ellipsis"><%= chapter.title %></span>
+      <% end %>
+
+      <%= link_to chapterable_slug_path(chapter), class: "toc__title min-width hide_from_edit_mode", data: { turbo_frame: "_top" } do %>
+        <span class="overflow-ellipsis"><%= chapter.title %></span>
+      <% end %>
+    <% else %>
+      <%= link_to chapterable_slug_path(chapter), class: "toc__title min-width", data: { turbo_frame: "_top" } do %>
+        <span class="overflow-ellipsis"><%= chapter.title %></span>
+      <% end %>
+    <% end %>
+
+    <span class="toc__bookmark">
+      <svg viewBox="0 0 64 64" width="64px" height="64px" xmlns="http://www.w3.org/2000/svg">
+        <path d="m17.01 54.01v-42.98.00000045c-.00000025-1.65685 1.34315-3 3-3h24-.00000013c1.65685-.00000007 3 1.34315 3 3v42.98.0001206c0 1.10457-.895431 2-2 2-.34994 0-.693756-.0918173-.997105-.266281l-11.5039-6.61564c-.308638-.17748-.688362-.17748-.997 0l-11.5046 6.6153.00000011-.00000006c-.957413.550849-2.1801.221264-2.73095-.736149-.174564-.303405-.266442-.647312-.266451-.997351z" fill-rule="evenodd" fill="var(--color-marker)" />
+      </svg>
+    </span>
+
+    <small class="toc__wordcount txt-small--responsive">
+      <% if chapter.page? %>
+        <%= word_count(chapter.chapterable.body.content) %>
+      <% end %>
+    </small>
+  <% end %>
+<% end %>

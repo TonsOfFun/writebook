@@ -27,6 +27,9 @@ export default class extends Controller {
     this.isStreaming = false
     this.storedSelection = null   // Store original selection text for gsub replacement
     this.storedFullContent = null // Store full content for gsub replacement
+    this.selectionStart = null    // Selection start offset for fragment tracking
+    this.selectionEnd = null      // Selection end offset for fragment tracking
+    this.detectedReferences = []  // Markdown links found in selection
 
     // Listen for global AI action events (from toolbar buttons outside controller scope)
     this.handleGlobalAiAction = this.handleGlobalAiAction.bind(this)
@@ -79,7 +82,7 @@ export default class extends Controller {
     }
 
     const fullContent = this.getEditorContent(editor)
-    const selection = this.getEditorSelection(editor)
+    const selectionData = this.getEditorSelectionWithPosition(editor)
 
     if (!fullContent || !fullContent.trim()) {
       alert('Please add some content to the editor first')
@@ -87,14 +90,24 @@ export default class extends Controller {
     }
 
     // Store for gsub-style replacement on apply
-    this.storedSelection = selection
+    this.storedSelection = selectionData.text
     this.storedFullContent = fullContent
+    this.selectionStart = selectionData.start
+    this.selectionEnd = selectionData.end
     this.originalContentValue = fullContent
     this.actionValue = actionType
-    this.hasSelectionValue = !!selection
+    this.hasSelectionValue = !!selectionData.text
 
-    this.openModal(actionType, selection ? 'selection' : '')
-    this.startStreaming(actionType, selection, fullContent)
+    // Detect markdown links in selection for reference-aware editing
+    if (selectionData.text) {
+      this.detectedReferences = this.detectMarkdownLinks(selectionData.text)
+      console.log('[AI Modal] Detected references:', this.detectedReferences)
+    } else {
+      this.detectedReferences = []
+    }
+
+    this.openModal(actionType, selectionData.text ? 'selection' : '')
+    this.startStreaming(actionType, selectionData.text, fullContent)
   }
 
   /**
@@ -115,7 +128,7 @@ export default class extends Controller {
 
     // Get content from editor
     const fullContent = this.getEditorContent(editor)
-    const selection = this.getEditorSelection(editor)
+    const selectionData = this.getEditorSelectionWithPosition(editor)
 
     if (!fullContent || !fullContent.trim()) {
       alert('Please add some content to the editor first')
@@ -123,15 +136,25 @@ export default class extends Controller {
     }
 
     // Store for gsub-style replacement on apply
-    this.storedSelection = selection
+    this.storedSelection = selectionData.text
     this.storedFullContent = fullContent
+    this.selectionStart = selectionData.start
+    this.selectionEnd = selectionData.end
     this.originalContentValue = fullContent
     this.actionValue = actionType
-    this.hasSelectionValue = !!selection
+    this.hasSelectionValue = !!selectionData.text
+
+    // Detect markdown links in selection for reference-aware editing
+    if (selectionData.text) {
+      this.detectedReferences = this.detectMarkdownLinks(selectionData.text)
+      console.log('[AI Modal] Detected references:', this.detectedReferences)
+    } else {
+      this.detectedReferences = []
+    }
 
     // Open modal and start streaming
-    this.openModal(actionType, selection ? 'selection' : '')
-    this.startStreaming(actionType, selection, fullContent)
+    this.openModal(actionType, selectionData.text ? 'selection' : '')
+    this.startStreaming(actionType, selectionData.text, fullContent)
   }
 
   /**
@@ -229,9 +252,20 @@ export default class extends Controller {
       // If there's a selection, that's the primary content to work on
       if (selection) {
         requestBody.selection = selection
+
+        // Include selection position for fragment tracking
+        if (this.selectionStart !== null && this.selectionEnd !== null) {
+          requestBody.selection_start = this.selectionStart
+          requestBody.selection_end = this.selectionEnd
+        }
+
+        // Include detected references for reference-aware editing
+        if (this.detectedReferences.length > 0) {
+          requestBody.detected_references = this.detectedReferences
+        }
       }
 
-      // Include page_id for context association (e.g., research references)
+      // Include page_id for context association (e.g., research references, fragments)
       if (this.hasPageIdValue) {
         requestBody.page_id = this.pageIdValue
       }
@@ -489,6 +523,14 @@ export default class extends Controller {
    * Returns null if no selection or selection is empty
    */
   getEditorSelection(editor) {
+    return this.getEditorSelectionWithPosition(editor).text
+  }
+
+  /**
+   * Get the selected text and position from the editor
+   * Returns { text, start, end } or { text: null, start: null, end: null }
+   */
+  getEditorSelectionWithPosition(editor) {
     if (editor.tagName === 'HOUSE-MD') {
       // house-md uses CodeMirror internally
       const cm = editor.querySelector('.cm-editor')
@@ -498,22 +540,44 @@ export default class extends Controller {
         const to = state.selection.main.to
         const selection = state.sliceDoc(from, to)
         if (selection && selection.trim()) {
-          return selection
+          return { text: selection, start: from, end: to }
         }
       }
-      // Fallback: check window selection
+      // Fallback: check window selection (can't get position reliably)
       const selection = window.getSelection()
       if (selection && selection.toString().trim()) {
-        return selection.toString().trim()
+        return { text: selection.toString().trim(), start: null, end: null }
       }
     } else if (editor.tagName === 'TEXTAREA') {
       const start = editor.selectionStart
       const end = editor.selectionEnd
       if (start !== end) {
-        return editor.value.substring(start, end)
+        return { text: editor.value.substring(start, end), start, end }
       }
     }
-    return null
+    return { text: null, start: null, end: null }
+  }
+
+  /**
+   * Detect markdown links in text
+   * Returns array of { text, url } objects
+   */
+  detectMarkdownLinks(text) {
+    if (!text) return []
+
+    const regex = /\[([^\]]+)\]\(([^)]+)\)/g
+    const links = []
+    let match
+
+    while ((match = regex.exec(text)) !== null) {
+      links.push({
+        text: match[1],
+        url: match[2],
+        accepted: true  // Default to accepted
+      })
+    }
+
+    return links
   }
 
   cleanup() {
@@ -525,5 +589,8 @@ export default class extends Controller {
     this.accumulatedContent = ''
     this.storedSelection = null
     this.storedFullContent = null
+    this.selectionStart = null
+    this.selectionEnd = null
+    this.detectedReferences = []
   }
 }

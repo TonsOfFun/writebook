@@ -1,0 +1,114 @@
+<% content_for(:title) { @source.display_name } %>
+<% @layout_class = "reports" %>
+
+<% content_for :header do %>
+  <nav>
+    <%= link_to report_sources_path(@report), class: "btn flex-item-justify-start" do %>
+      <%= image_tag "arrow-left.svg", aria: { hidden: true }, size: 24 %>
+      <span class="for-screen-reader">Back to sources</span>
+    <% end %>
+
+    <div class="breadcrumbs">
+      <%= render "reports/index_link" %>
+      <span class="flex-item-no-shrink">&#9656;</span>
+      <%= link_to @report.title, report_slug_path(@report) %>
+      <span class="flex-item-no-shrink">&#9656;</span>
+      <%= link_to "Sources", report_sources_path(@report) %>
+      <span class="flex-item-no-shrink">&#9656;</span>
+      <strong><%= truncate(@source.display_name, length: 30) %></strong>
+    </div>
+  </nav>
+<% end %>
+
+<div class="library">
+  <section class="center-narrow">
+    <header class="flex align-center justify-between margin-block-end-double">
+      <div>
+        <h1 class="txt-xx-large margin-none"><%= @source.display_name %></h1>
+        <div class="txt-faint margin-block-start-half">
+          <span class="source-type-badge"><%= @source.source_type.upcase %></span>
+          <% if @source.url.present? %>
+            &middot; <%= link_to @source.url, @source.url, target: "_blank", rel: "noopener", class: "txt-faint" %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="flex gap-half">
+        <%= link_to edit_report_source_path(@report, @source), class: "btn" do %>
+          <%= image_tag "write.svg", size: 24, aria: { hidden: true } %>
+          Edit
+        <% end %>
+      </div>
+    </header>
+
+    <div class="source-details">
+      <div class="source-meta pad border rounded margin-block-end">
+        <h2 class="txt-medium margin-block-end">Details</h2>
+
+        <dl class="meta-list">
+          <dt class="txt-faint">Status</dt>
+          <dd>
+            <% case @source.processing_status %>
+            <% when "pending", "processing" %>
+              <span class="status-badge status-badge--pending">
+                <span class="spinner txt-x-small"></span>
+                Processing...
+              </span>
+            <% when "completed" %>
+              <span class="status-badge status-badge--completed">Ready</span>
+            <% when "failed" %>
+              <span class="status-badge status-badge--failed">Failed</span>
+            <% end %>
+          </dd>
+
+          <% if @source.file.attached? %>
+            <dt class="txt-faint">File</dt>
+            <dd>
+              <%= @source.file.filename %> (<%= number_to_human_size(@source.file.byte_size) %>)
+            </dd>
+          <% end %>
+
+          <% if @source.processed_at.present? %>
+            <dt class="txt-faint">Processed</dt>
+            <dd><%= time_ago_in_words(@source.processed_at) %> ago</dd>
+          <% end %>
+
+          <dt class="txt-faint">Added</dt>
+          <dd><%= time_ago_in_words(@source.created_at) %> ago</dd>
+        </dl>
+
+        <% if @source.processing_error.present? %>
+          <div class="error-box pad margin-block-start">
+            <strong class="txt-negative">Processing Error:</strong>
+            <p class="txt-small"><%= @source.processing_error %></p>
+          </div>
+        <% end %>
+      </div>
+
+      <% if @source.metadata.present? && @source.metadata.any? %>
+        <div class="source-metadata pad border rounded margin-block-end">
+          <h2 class="txt-medium margin-block-end">Metadata</h2>
+          <pre class="txt-small overflow-auto"><%= JSON.pretty_generate(@source.metadata) %></pre>
+        </div>
+      <% end %>
+
+      <% if @source.extracted_content.present? %>
+        <div class="source-content pad border rounded">
+          <h2 class="txt-medium margin-block-end">Extracted Content</h2>
+          <div class="extracted-content txt-small overflow-auto" style="max-height: 500px;">
+            <%= simple_format(truncate(@source.extracted_content, length: 10000)) %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if @source.summary.present? %>
+        <div class="source-summary pad border rounded margin-block-start">
+          <h2 class="txt-medium margin-block-end">Summary</h2>
+          <div class="txt-medium">
+            <%= simple_format(@source.summary) %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>

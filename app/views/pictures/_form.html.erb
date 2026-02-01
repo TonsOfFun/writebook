@@ -1,4 +1,4 @@
-<%= leafable_edit_form(picture, id: "leafable-editor") do |form| %>
+<%= chapterable_edit_form(picture, id: "chapterable-editor") do |form| %>
   <label class="input input--file input--picture unpad" data-controller="upload-preview">
     <%= image_tag picture.image.attached? ? picture.image.variant(:large) : "default-picture.webp", alt: "Picture",
         data: { upload_preview_target: "image" } %>

@@ -1,0 +1,12 @@
+<figure class="library__report position-relative">
+  <div class="library__report--empty center">
+    <%= image_tag "empty-cover.png", alt: "Report cover", class: "report__cover" %>
+    <span class="btn btn--positive center">
+      <%= image_tag "add.svg", aria: { hidden: true }, size: 24 %>
+      <span class="for-screen-reader"></span>
+    </span>
+  </div>
+  <%= link_to new_report_path, class: "bookmark__link" do %>
+    <span class="for-screen-reader">Create a new report</span>
+  <% end %>
+</figure>

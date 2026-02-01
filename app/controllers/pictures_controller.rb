@@ -1,10 +1,10 @@
-class PicturesController < LeafablesController
+class PicturesController < ChapterablesController
   private
-    def new_leafable
-      Picture.new leafable_params
+    def new_chapterable
+      Picture.new chapterable_params
     end
 
-    def leafable_params
+    def chapterable_params
       params.fetch(:picture, {}).permit(:image, :caption)
     end
 end

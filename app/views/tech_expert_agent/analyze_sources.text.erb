@@ -1,0 +1,25 @@
+Analyze the following source materials for technology diligence findings.
+
+<% if @focus_areas.present? %>
+Focus your analysis on these areas: <%= @focus_areas.join(", ") %>
+<% end %>
+
+## Source Materials
+<%= @source_context %>
+
+## Instructions
+Review all provided sources and identify potential findings in these categories:
+- Security vulnerabilities and risks
+- Performance issues and bottlenecks
+- Architectural concerns and technical debt
+- Code quality issues
+- Compliance gaps
+
+For each finding, provide:
+1. A clear title
+2. Severity assessment (critical, high, medium, low, or info)
+3. Detailed description with specific evidence from sources
+4. Recommended remediation steps
+5. Source references (cite by Source ID)
+
+Format your response as a structured analysis with clear sections for each finding.

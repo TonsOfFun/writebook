@@ -10,15 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2025_12_28_141706) do
+ActiveRecord::Schema[8.2].define(version: 2026_01_29_214504) do
   create_table "accesses", force: :cascade do |t|
-    t.integer "book_id", null: false
     t.datetime "created_at", null: false
     t.string "level", null: false
+    t.integer "report_id", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
-    t.index ["book_id"], name: "index_accesses_on_book_id"
-    t.index ["user_id", "book_id"], name: "index_accesses_on_user_id_and_book_id", unique: true
+    t.index ["report_id"], name: "index_accesses_on_report_id"
+    t.index ["user_id", "report_id"], name: "index_accesses_on_user_id_and_report_id", unique: true
     t.index ["user_id"], name: "index_accesses_on_user_id"
   end
 
@@ -83,6 +83,32 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_28_141706) do
     t.datetime "updated_at", null: false
     t.index ["contextable_type", "contextable_id"], name: "index_agent_contexts_on_contextable"
     t.index ["trace_id"], name: "index_agent_contexts_on_trace_id"
+  end
+
+  create_table "agent_fragments", force: :cascade do |t|
+    t.string "action_type"
+    t.integer "agent_context_id", null: false
+    t.text "applied_content"
+    t.string "content_hash"
+    t.integer "contextable_id"
+    t.string "contextable_type"
+    t.datetime "created_at", null: false
+    t.json "detected_references"
+    t.integer "end_offset"
+    t.string "fragment_type"
+    t.text "generated_content"
+    t.json "metadata"
+    t.text "original_content"
+    t.integer "parent_fragment_id"
+    t.integer "start_offset"
+    t.string "status", default: "pending"
+    t.datetime "updated_at", null: false
+    t.index ["agent_context_id"], name: "index_agent_fragments_on_agent_context_id"
+    t.index ["content_hash"], name: "index_agent_fragments_on_content_hash"
+    t.index ["contextable_type", "contextable_id"], name: "index_agent_fragments_on_contextable"
+    t.index ["contextable_type", "contextable_id"], name: "index_agent_fragments_on_contextable_type_and_contextable_id"
+    t.index ["parent_fragment_id"], name: "index_agent_fragments_on_parent_fragment_id"
+    t.index ["status"], name: "index_agent_fragments_on_status"
   end
 
   create_table "agent_generations", force: :cascade do |t|
@@ -171,17 +197,17 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_28_141706) do
     t.index ["tool_call_id"], name: "index_agent_tool_calls_on_tool_call_id"
   end
 
-  create_table "books", force: :cascade do |t|
-    t.string "author"
+  create_table "chapters", force: :cascade do |t|
+    t.integer "chapterable_id", null: false
+    t.string "chapterable_type", null: false
     t.datetime "created_at", null: false
-    t.boolean "everyone_access", default: true, null: false
-    t.boolean "published", default: false, null: false
-    t.string "slug", null: false
-    t.string "subtitle"
-    t.string "theme", default: "blue", null: false
+    t.float "position_score", null: false
+    t.integer "report_id", null: false
+    t.string "status", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
-    t.index ["published"], name: "index_books_on_published"
+    t.index ["chapterable_type", "chapterable_id"], name: "index_leafs_on_leafable"
+    t.index ["report_id"], name: "index_chapters_on_report_id"
   end
 
   create_table "documents", force: :cascade do |t|
@@ -199,26 +225,28 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_28_141706) do
 
   create_table "edits", force: :cascade do |t|
     t.string "action", null: false
+    t.integer "chapter_id", null: false
+    t.integer "chapterable_id", null: false
+    t.string "chapterable_type", null: false
     t.datetime "created_at", null: false
-    t.integer "leaf_id", null: false
-    t.integer "leafable_id", null: false
-    t.string "leafable_type", null: false
     t.datetime "updated_at", null: false
-    t.index ["leaf_id"], name: "index_edits_on_leaf_id"
-    t.index ["leafable_type", "leafable_id"], name: "index_edits_on_leafable"
+    t.index ["chapter_id"], name: "index_edits_on_chapter_id"
+    t.index ["chapterable_type", "chapterable_id"], name: "index_edits_on_leafable"
   end
 
-  create_table "leaves", force: :cascade do |t|
-    t.integer "book_id", null: false
+  create_table "findings", force: :cascade do |t|
+    t.string "category"
     t.datetime "created_at", null: false
-    t.integer "leafable_id", null: false
-    t.string "leafable_type", null: false
-    t.float "position_score", null: false
-    t.string "status", null: false
-    t.string "title", null: false
+    t.text "description"
+    t.text "evidence"
+    t.json "metadata", default: {}
+    t.text "recommendation"
+    t.string "severity", default: "medium", null: false
+    t.string "status", default: "open", null: false
     t.datetime "updated_at", null: false
-    t.index ["book_id"], name: "index_leaves_on_book_id"
-    t.index ["leafable_type", "leafable_id"], name: "index_leafs_on_leafable"
+    t.index ["category"], name: "index_findings_on_category"
+    t.index ["severity"], name: "index_findings_on_severity"
+    t.index ["status"], name: "index_findings_on_status"
   end
 
   create_table "pages", force: :cascade do |t|
@@ -230,6 +258,19 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_28_141706) do
     t.string "caption"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "reports", force: :cascade do |t|
+    t.string "author"
+    t.datetime "created_at", null: false
+    t.boolean "everyone_access", default: true, null: false
+    t.boolean "published", default: false, null: false
+    t.string "slug", null: false
+    t.string "subtitle"
+    t.string "theme", default: "blue", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["published"], name: "index_reports_on_published"
   end
 
   create_table "sections", force: :cascade do |t|
@@ -251,6 +292,64 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_28_141706) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "source_tags", force: :cascade do |t|
+    t.string "context"
+    t.datetime "created_at", null: false
+    t.text "excerpt"
+    t.integer "position", default: 0
+    t.integer "source_id", null: false
+    t.integer "taggable_id", null: false
+    t.string "taggable_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["source_id"], name: "index_source_tags_on_source_id"
+    t.index ["taggable_type", "taggable_id", "source_id"], name: "index_source_tags_uniqueness", unique: true
+    t.index ["taggable_type", "taggable_id"], name: "index_source_tags_on_taggable"
+  end
+
+  create_table "sources", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "extracted_content"
+    t.json "metadata", default: {}
+    t.string "name", null: false
+    t.datetime "processed_at"
+    t.text "processing_error"
+    t.string "processing_status", default: "pending"
+    t.text "raw_content"
+    t.integer "report_id", null: false
+    t.string "source_type", null: false
+    t.text "summary"
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.index ["processing_status"], name: "index_sources_on_processing_status"
+    t.index ["report_id"], name: "index_sources_on_report_id"
+    t.index ["source_type"], name: "index_sources_on_source_type"
+  end
+
+  create_table "suggestions", force: :cascade do |t|
+    t.boolean "ai_generated", default: false
+    t.integer "author_id"
+    t.text "comment"
+    t.string "content_hash"
+    t.datetime "created_at", null: false
+    t.integer "end_offset"
+    t.text "original_text"
+    t.datetime "resolved_at"
+    t.integer "resolved_by_id"
+    t.integer "start_offset"
+    t.string "status", default: "pending", null: false
+    t.integer "suggestable_id", null: false
+    t.string "suggestable_type", null: false
+    t.text "suggested_text"
+    t.string "suggestion_type", default: "edit", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ai_generated"], name: "index_suggestions_on_ai_generated"
+    t.index ["author_id"], name: "index_suggestions_on_author_id"
+    t.index ["resolved_by_id"], name: "index_suggestions_on_resolved_by_id"
+    t.index ["status"], name: "index_suggestions_on_status"
+    t.index ["suggestable_type", "suggestable_id"], name: "index_suggestions_on_suggestable"
+    t.index ["suggestion_type"], name: "index_suggestions_on_suggestion_type"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true
     t.datetime "created_at", null: false
@@ -263,21 +362,27 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_28_141706) do
     t.index ["name"], name: "index_users_on_name", unique: true
   end
 
-  add_foreign_key "accesses", "books"
+  add_foreign_key "accesses", "reports"
   add_foreign_key "accesses", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "agent_fragments", "agent_contexts"
+  add_foreign_key "agent_fragments", "agent_fragments", column: "parent_fragment_id"
   add_foreign_key "agent_generations", "agent_contexts"
   add_foreign_key "agent_generations", "agent_messages", column: "response_message_id"
   add_foreign_key "agent_messages", "agent_contexts"
   add_foreign_key "agent_references", "agent_contexts"
   add_foreign_key "agent_references", "agent_tool_calls"
   add_foreign_key "agent_tool_calls", "agent_contexts"
-  add_foreign_key "edits", "leaves"
-  add_foreign_key "leaves", "books"
+  add_foreign_key "chapters", "reports"
+  add_foreign_key "edits", "chapters"
   add_foreign_key "sessions", "users"
+  add_foreign_key "source_tags", "sources"
+  add_foreign_key "sources", "reports"
+  add_foreign_key "suggestions", "users", column: "author_id"
+  add_foreign_key "suggestions", "users", column: "resolved_by_id"
 
   # Virtual tables defined in this database.
   # Note that virtual tables may not work with other database engines. Be careful if changing database.
-  create_virtual_table "leaf_search_index", "fts5", ["title", "content", "tokenize='porter'"]
+  create_virtual_table "chapter_search_index", "fts5", ["title", "content", "tokenize='porter'"]
 end

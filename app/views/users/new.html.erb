@@ -11,8 +11,8 @@
 <% end %>
 
 <div class="panel shadow center <%= "shake" if flash[:alert] %>">
-  <%= image_tag "writebook-icon.svg", class: "product__logo center colorize--black", size: 130 %>
-  <h1 class="margin-none-block-start margin-block-end-double">Writebook</h1>
+  <span class="product__logo center" style="font-size: 100px;">🥒</span>
+  <h1 class="margin-none-block-start margin-block-end-double">Dill</h1>
 
   <%= form_with model: @user, url: join_path(params[:join_code]), class: "flex flex-column gap" do |form| %>
     <div class="flex align-center gap">

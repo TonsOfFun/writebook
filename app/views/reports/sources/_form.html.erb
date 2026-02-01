@@ -1,0 +1,59 @@
+<%= form_with model: [@report, source], id: "source-form", class: "form", data: { controller: "source-form" } do |form| %>
+  <% if source.errors.any? %>
+    <div class="form-errors margin-block-end">
+      <% source.errors.full_messages.each do |message| %>
+        <p class="txt-negative"><%= message %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <fieldset class="form-group margin-block-end-double">
+    <legend class="txt-medium margin-block-end">Source Type</legend>
+
+    <div class="flex gap wrap">
+      <% Source::SOURCE_TYPES.each do |type| %>
+        <label class="radio-card flex align-center gap pad" data-source-form-target="typeOption" data-type="<%= type %>">
+          <%= form.radio_button :source_type, type, data: { action: "source-form#typeChanged" } %>
+          <span class="radio-card__label">
+            <% case type %>
+            <% when "pdf" %>
+              <%= image_tag "file.svg", size: 24 %> PDF
+            <% when "image" %>
+              <%= image_tag "photo.svg", size: 24 %> Image
+            <% when "text" %>
+              <%= image_tag "write.svg", size: 24 %> Text
+            <% when "url" %>
+              <%= image_tag "link.svg", size: 24 %> URL
+            <% end %>
+          </span>
+        </label>
+      <% end %>
+    </div>
+  </fieldset>
+
+  <div class="form-group margin-block-end">
+    <%= form.label :name, "Name", class: "txt-medium" %>
+    <%= form.text_field :name, class: "input input--full-width", placeholder: "Give this source a name" %>
+  </div>
+
+  <div class="form-group margin-block-end" data-source-form-target="fileField" data-show-for="pdf image">
+    <%= form.label :file, "File", class: "txt-medium" %>
+    <%= form.file_field :file, class: "input input--full-width", accept: ".pdf,.png,.jpg,.jpeg,.gif,.webp" %>
+    <p class="txt-small txt-faint margin-block-start-half">Accepts PDF, PNG, JPG, GIF, WebP</p>
+  </div>
+
+  <div class="form-group margin-block-end" data-source-form-target="urlField" data-show-for="url" style="display: none;">
+    <%= form.label :url, "URL", class: "txt-medium" %>
+    <%= form.url_field :url, class: "input input--full-width", placeholder: "https://example.com/article" %>
+  </div>
+
+  <div class="form-group margin-block-end" data-source-form-target="textField" data-show-for="text" style="display: none;">
+    <%= form.label :raw_content, "Content", class: "txt-medium" %>
+    <%= form.text_area :raw_content, class: "input input--full-width", rows: 10, placeholder: "Paste or type your text content here..." %>
+  </div>
+
+  <div class="form-actions flex justify-end gap margin-block-start-double">
+    <%= link_to "Cancel", report_sources_path(@report), class: "btn" %>
+    <%= form.submit source.persisted? ? "Update Source" : "Add Source", class: "btn btn--reversed txt-medium" %>
+  </div>
+<% end %>

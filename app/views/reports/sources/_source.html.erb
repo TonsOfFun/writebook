@@ -1,0 +1,58 @@
+<%= tag.div id: dom_id(source), class: "source-card flex gap pad border-bottom" do %>
+  <div class="source-card__icon flex-item-no-shrink">
+    <% case source.source_type %>
+    <% when "pdf" %>
+      <%= image_tag "file.svg", size: 32, class: "colorize--faint" %>
+    <% when "image" %>
+      <%= image_tag "photo.svg", size: 32, class: "colorize--faint" %>
+    <% when "text" %>
+      <%= image_tag "write.svg", size: 32, class: "colorize--faint" %>
+    <% when "url" %>
+      <%= image_tag "link.svg", size: 32, class: "colorize--faint" %>
+    <% end %>
+  </div>
+
+  <div class="source-card__content flex-grow">
+    <h3 class="txt-medium margin-none">
+      <%= link_to source.display_name, report_source_path(@report, source), class: "link--plain" %>
+    </h3>
+
+    <div class="txt-small txt-faint margin-block-start-half">
+      <span class="source-type-badge"><%= source.source_type.upcase %></span>
+      <% if source.url.present? %>
+        &middot; <%= link_to truncate(source.url, length: 50), source.url, target: "_blank", rel: "noopener", class: "txt-faint" %>
+      <% end %>
+      <% if source.file.attached? %>
+        &middot; <%= number_to_human_size(source.file.byte_size) %>
+      <% end %>
+    </div>
+
+    <div class="flex align-center gap-half margin-block-start">
+      <% case source.processing_status %>
+      <% when "pending", "processing" %>
+        <span class="status-badge status-badge--pending">
+          <span class="spinner txt-x-small"></span>
+          Processing...
+        </span>
+      <% when "completed" %>
+        <span class="status-badge status-badge--completed">Ready</span>
+      <% when "failed" %>
+        <span class="status-badge status-badge--failed" title="<%= source.processing_error %>">Failed</span>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="source-card__actions flex align-center gap-half">
+    <%= link_to edit_report_source_path(@report, source), class: "btn btn--small" do %>
+      <%= image_tag "write.svg", size: 18, aria: { hidden: true } %>
+      <span class="for-screen-reader">Edit</span>
+    <% end %>
+
+    <%= button_to report_source_path(@report, source), method: :delete,
+          class: "btn btn--small btn--negative",
+          data: { turbo_confirm: "Remove this source?" } do %>
+      <%= image_tag "trash.svg", size: 18, aria: { hidden: true } %>
+      <span class="for-screen-reader">Delete</span>
+    <% end %>
+  </div>
+<% end %>

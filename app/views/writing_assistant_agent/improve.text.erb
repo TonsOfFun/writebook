@@ -5,12 +5,19 @@ Context: <%= @context %>
 
 <% end %>
 <% if @related_content.present? %>
-## Related sections from this book (for reference and consistency):
+## Related sections from this report (for reference and consistency):
 <% @related_content.each do |related| %>
 ### <%= related[:title] %>
 <%= related[:content] %>
 
 <% end %>
+<% end %>
+<% if @reference_context.present? %>
+## Reference sources to consider:
+The following sources were found in the selected text. Use them to ensure accuracy and add relevant details:
+
+<%= @reference_context %>
+
 <% end %>
 <% if @has_selection %>
 ## Selected text to improve:

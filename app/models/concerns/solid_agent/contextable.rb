@@ -44,6 +44,16 @@ module SolidAgent
       has_many :agent_references,
                through: :agent_contexts,
                source: :references
+
+      # All agent fragments through contexts (for content transformation history)
+      has_many :agent_fragments,
+               through: :agent_contexts,
+               source: :fragments
+
+      # Direct fragments associated with this contextable (for queries that bypass contexts)
+      has_many :direct_agent_fragments,
+               as: :contextable,
+               class_name: "AgentFragment"
     end
 
     # Returns the most recent agent context for this record
@@ -91,6 +101,33 @@ module SolidAgent
     # Returns true if this record has any research references
     def has_research_references?
       research_references.exists?
+    end
+
+    # === Fragment Methods ===
+
+    # Returns all fragments for this record, most recent first
+    def content_fragments
+      agent_fragments.recent
+    end
+
+    # Returns fragments with generated content (excludes pending/discarded)
+    def generated_fragments
+      agent_fragments.with_generations.active
+    end
+
+    # Returns applied fragments for version history display
+    def applied_fragments
+      agent_fragments.where(status: :applied).recent
+    end
+
+    # Returns true if this record has any content fragments
+    def has_fragments?
+      agent_fragments.exists?
+    end
+
+    # Returns fragment count for badge display
+    def fragments_count
+      agent_fragments.active.count
     end
   end
 end

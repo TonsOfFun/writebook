@@ -1,0 +1,34 @@
+<% content_for :header do %>
+  <%= chapter_nav_tag(chapter) do %>
+    <%= render "chapters/sidebar_toggle" %>
+
+    <%= link_to_previous_chapterable(chapter) %>
+
+    <div class="breadcrumbs">
+      <%= render "reports/index_link" %>
+      <span class="flex-item-no-shrink">▸</span>
+      <%= link_to report.title, report_slug_path(report) %>
+      <span class="flex-item-no-shrink">▸</span>
+      <strong><%= chapter.chapterable.title %></strong>
+    </div>
+
+    <button class="btn" data-action="fullscreen#toggle" data-fullscreen-target="button">
+      <%= image_tag "expand.svg", aria: { hidden: true }, size: 24 %>
+      <span class="for-screen-reader">Enter fullscreen</span>
+    </button>
+
+    <%= render "reports/searches/search", report: @report %>
+  <% end %>
+<% end %>
+
+<% content_for :toolbar do %>
+  <div class="flex flex-column">
+    <% if report.editable? %>
+      <div class="page-toolbar fill-shade">
+        <%= editing_mode_toggle_switch(@chapter, checked: false) %>
+      </div>
+    <% end %>
+
+    <%= render "reports/searches/banner" %>
+  </div>
+<% end %>

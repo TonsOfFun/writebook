@@ -1,7 +1,7 @@
 module SearchesHelper
-  def highlight_searched_content(leaf, content, query)
+  def highlight_searched_content(chapter, content, query)
     if query.present?
-      terms = leaf.matches_for_highlight(query)
+      terms = chapter.matches_for_highlight(query)
       terms = whole_word_matchers(terms)
 
       sanitize_content highlight(content, terms, sanitize: false)

@@ -1,0 +1,46 @@
+<% content_for(:title) { "Sources for #{@report.title}" } %>
+<% @layout_class = "reports" %>
+
+<% content_for :header do %>
+  <nav>
+    <%= link_to report_slug_path(@report), class: "btn flex-item-justify-start" do %>
+      <%= image_tag "arrow-left.svg", aria: { hidden: true }, size: 24 %>
+      <span class="for-screen-reader">Back to report</span>
+    <% end %>
+
+    <div class="breadcrumbs">
+      <%= render "reports/index_link" %>
+      <span class="flex-item-no-shrink">&#9656;</span>
+      <%= link_to @report.title, report_slug_path(@report) %>
+      <span class="flex-item-no-shrink">&#9656;</span>
+      <strong>Sources</strong>
+    </div>
+  </nav>
+<% end %>
+
+<div class="library">
+  <section class="center-narrow">
+    <header class="flex align-center justify-between margin-block-end-double">
+      <h1 class="txt-xx-large">Source Library</h1>
+      <%= link_to new_report_source_path(@report), class: "btn btn--reversed txt-medium" do %>
+        <%= image_tag "add.svg", aria: { hidden: true }, size: 24 %>
+        Add Source
+      <% end %>
+    </header>
+
+    <% if @sources.any? %>
+      <turbo-frame id="sources-list">
+        <div class="sources-list">
+          <% @sources.each do |source| %>
+            <%= render "source", source: source %>
+          <% end %>
+        </div>
+      </turbo-frame>
+    <% else %>
+      <div class="empty-state center txt-medium pad-double">
+        <p class="txt-faint margin-block-end">No sources yet</p>
+        <p class="txt-faint">Add PDFs, images, text, or URLs to build your source library for this report.</p>
+      </div>
+    <% end %>
+  </section>
+</div>

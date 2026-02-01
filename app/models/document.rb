@@ -1,5 +1,5 @@
 class Document < ApplicationRecord
-  include Leafable
+  include Chapterable
 
   SUPPORTED_TYPES = %w[pdf pptx ppt docx].freeze
   PROCESSING_STATUSES = %w[pending processing completed failed].freeze

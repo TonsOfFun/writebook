@@ -1,5 +1,5 @@
 <%# References panel - slide-out panel for viewing research sources %>
-<%# locals: leaf, book %>
+<%# locals: chapter, report %>
 
 <div class="references-panel"
      data-controller="references-panel"
@@ -14,7 +14,7 @@
     </svg>
   </button>
 
-  <turbo-frame id="references-frame" src="<%= book_leaf_references_path(book, leaf) %>">
+  <turbo-frame id="references-frame" src="<%= report_chapter_references_path(report, chapter) %>">
     <div class="references">
       <div class="references__loading">
         <p class="txt-secondary">Loading references...</p>

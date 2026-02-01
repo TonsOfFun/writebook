@@ -1,0 +1,38 @@
+<%= chapter_item_tag(chapter) do %>
+  <span class="btn btn--link arrangement__handle txt-small">
+    <%= image_tag "handle.svg", aria: { hidden: true }, size: 24 %>
+    <span class="for-screen-reader">Move <%= chapter.title %></span>
+  </span>
+
+  <%= link_to chapterable_path(chapter), class: "toc__thumbnail", data: { turbo_frame: "_top" } do %>
+    <%= chapter.section.body if chapter.section? %>
+    <%= chapter.chapterable.body.to_html if chapter.page? %>
+    <%= image_tag chapter.chapterable.image.variant(:large) if chapter.picture&.image&.attached? %>
+  <% end %>
+
+  <div class="toc__title flex align-center min-width">
+    <%= form_with model: [ chapter.report, chapter ], url: chapterable_path(chapter), class: "flex align-center max-width min-width", id: dom_id(chapter, "form") do |form| %>
+      <%= form.text_field :title, class: "input full-width", autofocus: true, autocomplete: "off", data: { controller: "autoselect" } %>
+    <% end %>
+
+    <span class="flex align-center gap-half">
+      <button type="submit" class="btn txt-small btn--positive" form="<%= dom_id(chapter, "form") %>">
+        <%= image_tag "check.svg", aria: { hidden: true }, size: 24 %>
+        <span class="for-screen-reader">Save</span>
+      </button>
+
+      <%= button_to chapterable_path(chapter), method: :delete, class: "btn btn--negative txt-small" do %>
+        <%= image_tag "trash.svg", aria: { hidden: true }, size: 24 %>
+        <span class="for-screen-reader">Delete this page</span>
+      <% end %>
+    </span>
+  </div>
+
+  <small class="toc__wordcount">
+    <% if chapter.page? %>
+      <%= word_count(chapter.chapterable.body.content) %>
+    <% end %>
+  </small>
+
+  <%= yield if block_given? %>
+<% end %>

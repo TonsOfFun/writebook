@@ -206,6 +206,30 @@ class AssistantsController < ApplicationController
     full_content = params[:full_content]
     content = selection.present? ? selection : full_content
 
+    # Look up the page to associate context/fragments with
+    contextable = params[:page_id].present? ? Page.find_by(id: params[:page_id]) : nil
+
+    # Build fragment data for tracking content transformations
+    fragment_data = nil
+    if selection.present? && contextable.present?
+      # Safely convert detected_references to an array of hashes
+      detected_refs = nil
+      if params[:detected_references].present?
+        detected_refs = params[:detected_references].map do |ref|
+          ref.permit(:text, :url, :accepted).to_h
+        end
+      end
+
+      fragment_data = {
+        original_content: selection,
+        start_offset: params[:selection_start],
+        end_offset: params[:selection_end],
+        action_type: action,
+        detected_references: detected_refs,
+        fragment_type: "selection"
+      }
+    end
+
     agent = WritingAssistantAgent.with(
       content: content,
       selection: selection,
@@ -217,7 +241,9 @@ class AssistantsController < ApplicationController
       areas_to_expand: params[:areas_to_expand],
       topic: params[:topic],
       number_of_ideas: params[:number_of_ideas] || 5,
-      stream_id: stream_id
+      stream_id: stream_id,
+      contextable: contextable,
+      fragment_data: fragment_data
     )
 
     # Route to the appropriate agent action
